@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Conditional Access controls..."
 
@@ -256,3 +256,4 @@ Export-ControlResult -ControlID "AAD.CA.10" -Data $TechnicalAccountExclusions -R
 Export-SummaryReport "ConditionalAccess"
 
 Write-Host "Conditional Access audit completed."
+

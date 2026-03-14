@@ -5,7 +5,7 @@
 $script:AuditBasePath = Split-Path -Parent $PSScriptRoot
 $script:DetailedReportPath = Join-Path $script:AuditBasePath "Reports\Detailed"
 $script:SummaryReportPath = Join-Path $script:AuditBasePath "Reports\Summary"
-$script:ControlCatalogPath = Join-Path $script:AuditBasePath "m365_controls.json"
+$script:ControlCatalogPath = Join-Path $script:AuditBasePath "categories\EntraID\m365_entraID.json"
 
 if (-not $Global:ControlCatalog) {
     $Global:ControlCatalog = @{}
@@ -237,3 +237,4 @@ function Export-ControlResult {
     Export-ControlDetails -ControlID $ControlID -Data $Data
     Add-SummaryEntry -ControlID $ControlID -Result $Result -Status $Status
 }
+

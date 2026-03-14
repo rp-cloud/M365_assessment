@@ -1,16 +1,15 @@
-jest to framework do audytu entraID w środowisku M365
-przeanalizuj kod aplikacji
-na podstawie pliku m365_controls.json sprawdź jakie są kontrole i jake są dodatkowe informacje o nich
-w 'categories' znajdują się pliki z kodem PS dla każdej z 8 kategorii
-nie zmieniej struktury pliku main.ps, to bardzo ważne !!!
-plik main uruchamia cały framework i wczytuje cache, potem zgodnie z wyborem w menu uruchamia test kontroli wg kategorii a na końcu generuje raport, sumaryczny dla całej kategorii i szczegółowy dla każdej kontroli
-nie zmieniaj również struktury plików i katalogów
+Musimy przebudować architekturę całego frameworka, ponieważ chcę dodać równiż inne opcje poza EntraID
+1. w folderze categories utwórz podfoldery
+- EntraID
+- Exchange
+- OneDrive
+2. obecne w 'category' pliki z kodem przenieś do podfolderu EntraID
+3. plik m365_controls.json też przenieś do EntraID i zmień jego nazwę na m365_entraID.json
+4. przebuduj main.ps w następujący sposób:
+- ma być wielostopniowe menu, pierwszy stopień menu to wybór głównej kategorii tj. EntraID, Exchange, OneDrive
+- po wybraniu w kategorii głównej EntraID ma się pojawić podmenu zawierające obecnie istniejące menu z opcjami dla kategorii w EntraID, ponadto dodaj opcję np. nr 10 - powrót do głównego menu
+- podmenu Exchange i OneDrive dodaj tylko powrót do głównego menu, tam jeszcze nie ma opcji
+- opcje logowania i uruchomienia buforowania do cache przenieś do podmenu EntraID, czyli logowanie do grapha i zaczytanie danych do cache ma się odbyć dopiero gdy user wybierze w menu głównym opcję EntraID
+- obecny plik cache, zmień nazwę na cache_EntraID.ps1
+- dopasuj wszędzie kod, tak, żeby uwzględniał zmiany nazw i pozycje plików
 
-teraz podam ci w punktach, co należy zrobić
-1. przebuduj moduł raportowania, ma zawierać następujące pola:
-Contrl_ID, Descryption, Result, Status, Expected_Value, Recommencdation, Comment
-wszystkie wartości pól poza Result i Status skrypt musi zaczytywać sobie z pliku m365_controls.json
-2. wczytaj kolejno pliki z folderu categories, przeanalizuj kod i zmodyfikuj w razie potrzeby, tak, żeby jak najlepiej wykonywały zadanie audytowe dla danej kontroli.
-3. Wynik działania każdej kontroli musi jak najdokładniej spełniać wymogi kontrli zdefiniowane w m365_controls.json
-4. zwróć uwagę na plik cache.ps1, którego zadaniem jest wczytanie za pomocą kilku zapytań jak największej ilości urzytecznych danych z MS grafa i zabuforowania ich, a tym samym szybkiego dostępu do danych dla poszczególnych kontroli
-5. Jeżeli czegoś nie wiesz, to pytaj, ale staraj się być możliwie samodzielnym.

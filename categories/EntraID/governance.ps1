@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Governance controls..."
 
@@ -140,3 +140,4 @@ Export-ControlResult -ControlID "AAD.GV.07" -Data $WeeklyDigestInfo -Result "Man
 Export-SummaryReport "Governance"
 
 Write-Host "Governance audit completed."
+

@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Security Configuration controls..."
 
@@ -267,3 +267,4 @@ Export-ControlResult -ControlID "AAD.SC.18" -Data $SC18Data -Result "Manual veri
 Export-SummaryReport "SecurityConfiguration"
 
 Write-Host "Security Configuration audit completed."
+

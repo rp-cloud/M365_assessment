@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Privileged Access controls..."
 
@@ -172,3 +172,4 @@ Export-ControlResult -ControlID "AAD.PA.07" -Data $LicensedAdmins -Result "$($Li
 Export-SummaryReport "PrivilegedAccess"
 
 Write-Host "Privileged Access audit completed."
+

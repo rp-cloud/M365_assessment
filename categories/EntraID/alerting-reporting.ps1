@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running AAD Alerting & Reporting checks..."
 
@@ -155,3 +155,4 @@ Export-ControlResult -ControlID "AAD.AR.06" -Data $PrivAssignments -Result "$($P
 Export-SummaryReport "AAD_AlertingReporting"
 
 Write-Host "Alerting & Reporting audit completed."
+

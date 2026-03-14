@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running External Collaboration controls..."
 
@@ -112,3 +112,4 @@ Export-ControlResult -ControlID "AAD.EC.04" -Data $Partners -Result $EC04Result 
 Export-SummaryReport "ExternalCollaboration"
 
 Write-Host "External Collaboration audit completed."
+

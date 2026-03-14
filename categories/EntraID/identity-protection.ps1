@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Identity Protection controls..."
 
@@ -243,3 +243,4 @@ Export-ControlResult -ControlID "AAD.IP.12" -Data $(if ($PhishingResistantPolicy
 Export-SummaryReport "IdentityProtection"
 
 Write-Host "Identity Protection audit completed."
+

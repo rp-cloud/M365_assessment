@@ -1,5 +1,5 @@
-. "$PSScriptRoot\..\modules\reporting.ps1"
-. "$PSScriptRoot\..\modules\cache.ps1"
+. "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Identity Management controls..."
 
@@ -109,3 +109,4 @@ Export-ControlResult -ControlID "AAD.IM.05" -Data $InviteSettingData -Result "Gu
 Export-SummaryReport "IdentityManagement"
 
 Write-Host "Identity Management audit completed."
+
