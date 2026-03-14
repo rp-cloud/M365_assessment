@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Governance controls..."
@@ -10,6 +11,8 @@ $CurrentControl = 0
 
 $Policies = @(Get-CachedCAPolicies)
 $TermsOfUse = @(Get-CachedTermsOfUse)
+$CAAvailability = Get-AuditFirstUnavailableState -Keys @("CAPolicies")
+$LifecycleAvailability = Get-AuditFirstUnavailableState -Keys @("GroupLifecyclePolicies")
 
 ############################################################
 # AAD.GV.01
@@ -26,7 +29,12 @@ $ReauthPolicies = @(
         @{Name = "FrequencyType"; Expression = { $_.SessionControls.SignInFrequency.Type } }
 )
 
-Export-ControlResult -ControlID "AAD.GV.01" -Data $ReauthPolicies -Result "$($ReauthPolicies.Count) Conditional Access policies define sign-in frequency/session governance" -Status $(if ($ReauthPolicies.Count -gt 0) { "PASS" } else { "WARNING" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.GV.01" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.GV.01" -Data $ReauthPolicies -Result "$($ReauthPolicies.Count) Conditional Access policies define sign-in frequency/session governance" -Status $(if ($ReauthPolicies.Count -gt 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.GV.02
@@ -70,7 +78,12 @@ else {
     )
 }
 
-Export-ControlResult -ControlID "AAD.GV.03" -Data $GroupGovernanceData -Result $(if ($LifecyclePolicies.Count -gt 0) { "$($LifecyclePolicies.Count) lifecycle policies found for group governance" } else { "No lifecycle policy found; manual review required for inactive groups/sites" }) -Status $(if ($LifecyclePolicies.Count -gt 0) { "WARNING" } else { "MANUAL" })
+if ($LifecycleAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.GV.03" -AvailabilityState $LifecycleAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.GV.03" -Data $GroupGovernanceData -Result $(if ($LifecyclePolicies.Count -gt 0) { "$($LifecyclePolicies.Count) lifecycle policies found for group governance" } else { "No lifecycle policy found; manual review required for inactive groups/sites" }) -Status $(if ($LifecyclePolicies.Count -gt 0) { "WARNING" } else { "MANUAL" })
+}
 
 ############################################################
 # AAD.GV.04
@@ -113,12 +126,19 @@ Export-ControlResult -ControlID "AAD.GV.05" -Data $RiskAlertInfo -Result "Manual
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.GV.06 Terms of Use"
 
-$TermsData = @(
-    $TermsOfUse |
-    Select-Object DisplayName, Id, CreatedDateTime, ModifiedDateTime
-)
+$TermsAvailability = Get-AuditAvailabilityState -Key "TermsOfUse"
 
-Export-ControlResult -ControlID "AAD.GV.06" -Data $TermsData -Result "$($TermsData.Count) Terms of Use documents found" -Status $(if ($TermsData.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($TermsAvailability -and (Test-AuditUnavailableStatus -Status $TermsAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.GV.06" -Status $TermsAvailability.Status -Reason $TermsAvailability.Reason -Source $TermsAvailability.Source
+}
+else {
+    $TermsData = @(
+        $TermsOfUse |
+        Select-Object DisplayName, Id, CreatedDateTime, ModifiedDateTime
+    )
+
+    Export-ControlResult -ControlID "AAD.GV.06" -Data $TermsData -Result "$($TermsData.Count) Terms of Use documents found" -Status $(if ($TermsData.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.GV.07
@@ -140,4 +160,7 @@ Export-ControlResult -ControlID "AAD.GV.07" -Data $WeeklyDigestInfo -Result "Man
 Export-SummaryReport "Governance"
 
 Write-Host "Governance audit completed."
+
+
+
 

@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Identity Management controls..."
@@ -12,6 +13,10 @@ $Users = Get-CachedUsers
 $SignIns30 = Get-CachedSignIns -Days 30
 $AccessReviews = @(Get-CachedAccessReviewDefinitions)
 $AuthorizationPolicy = Get-CachedAuthorizationPolicy
+$AccessReviewAvailability = Get-AuditFirstUnavailableState -Keys @("AccessReviewDefinitions")
+$UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
+$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_30")
+$AuthPolicyAvailability = Get-AuditFirstUnavailableState -Keys @("AuthorizationPolicy")
 
 $ActiveUsers30 = @($SignIns30 | Where-Object { $_.UserPrincipalName } | Select-Object -ExpandProperty UserPrincipalName -Unique)
 $InternalUsers = @($Users | Where-Object { $_.UserType -eq "Member" })
@@ -29,7 +34,15 @@ $InactiveUsers = @(
     Select-Object DisplayName, UserPrincipalName, AccountEnabled, OnPremisesSyncEnabled, CreatedDateTime
 )
 
-Export-ControlResult -ControlID "AAD.IM.01" -Data $InactiveUsers -Result "$($InactiveUsers.Count) internal member accounts show no sign-in activity in the last 30 days" -Status $(if ($InactiveUsers.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IM.01" -AvailabilityState $UsersAvailability
+}
+elseif ($SignInsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IM.01" -AvailabilityState $SignInsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IM.01" -Data $InactiveUsers -Result "$($InactiveUsers.Count) internal member accounts show no sign-in activity in the last 30 days" -Status $(if ($InactiveUsers.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.IM.02
@@ -55,22 +68,27 @@ Export-ControlResult -ControlID "AAD.IM.02" -Data $LifecycleData -Result "Manual
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.IM.03 Access reviews"
 
-$AccessReviewData = @(
-    $AccessReviews |
-    Select-Object DisplayName, Id, Status, CreatedDateTime
-)
-
-$ManualAccessReviewData = if ($AccessReviewData.Count -gt 0) { $AccessReviewData } else {
-    @(
-        [PSCustomObject]@{
-            Verification = "Manual"
-            Scope        = "Periodic user access reviews"
-            Evidence     = "No access review definitions returned; verify alternative recurring review process"
-        }
-    )
+if ($AccessReviewAvailability -and (Test-AuditUnavailableStatus -Status $AccessReviewAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IM.03" -Status $AccessReviewAvailability.Status -Reason $AccessReviewAvailability.Reason -Source $AccessReviewAvailability.Source
 }
+else {
+    $AccessReviewData = @(
+        $AccessReviews |
+        Select-Object DisplayName, Id, Status, CreatedDateTime
+    )
 
-Export-ControlResult -ControlID "AAD.IM.03" -Data $ManualAccessReviewData -Result $(if ($AccessReviewData.Count -gt 0) { "$($AccessReviewData.Count) access review definitions found" } else { "No access review definitions found; manual verification required" }) -Status $(if ($AccessReviewData.Count -gt 0) { "WARNING" } else { "MANUAL" })
+    $ManualAccessReviewData = if ($AccessReviewData.Count -gt 0) { $AccessReviewData } else {
+        @(
+            [PSCustomObject]@{
+                Verification = "Manual"
+                Scope        = "Periodic user access reviews"
+                Evidence     = "No access review definitions returned; verify alternative recurring review process"
+            }
+        )
+    }
+
+    Export-ControlResult -ControlID "AAD.IM.03" -Data $ManualAccessReviewData -Result $(if ($AccessReviewData.Count -gt 0) { "$($AccessReviewData.Count) access review definitions found" } else { "No access review definitions found; manual verification required" }) -Status $(if ($AccessReviewData.Count -gt 0) { "WARNING" } else { "MANUAL" })
+}
 
 ############################################################
 # AAD.IM.04
@@ -79,16 +97,21 @@ Export-ControlResult -ControlID "AAD.IM.03" -Data $ManualAccessReviewData -Resul
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.IM.04 Teams and M365 Groups access reviews"
 
-$GroupReviews = @(
-    $AccessReviews |
-    Where-Object {
-        $_.Scope.ResourceType -eq "group" -or
-        $_.DisplayName -match "Teams|Group|M365|Microsoft 365"
-    } |
-    Select-Object DisplayName, Id, Status, CreatedDateTime
-)
+if ($AccessReviewAvailability -and (Test-AuditUnavailableStatus -Status $AccessReviewAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IM.04" -Status $AccessReviewAvailability.Status -Reason $AccessReviewAvailability.Reason -Source $AccessReviewAvailability.Source
+}
+else {
+    $GroupReviews = @(
+        $AccessReviews |
+        Where-Object {
+            $_.Scope.ResourceType -eq "group" -or
+            $_.DisplayName -match "Teams|Group|M365|Microsoft 365"
+        } |
+        Select-Object DisplayName, Id, Status, CreatedDateTime
+    )
 
-Export-ControlResult -ControlID "AAD.IM.04" -Data $GroupReviews -Result "$($GroupReviews.Count) access review definitions found for Teams/Microsoft 365 groups" -Status $(if ($GroupReviews.Count -gt 0) { "PASS" } else { "FAIL" })
+    Export-ControlResult -ControlID "AAD.IM.04" -Data $GroupReviews -Result "$($GroupReviews.Count) access review definitions found for Teams/Microsoft 365 groups" -Status $(if ($GroupReviews.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IM.05
@@ -104,9 +127,17 @@ $InviteSettingData = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.IM.05" -Data $InviteSettingData -Result "Guest invite setting is '$($AuthorizationPolicy.AllowInvitesFrom)'" -Status $(if ($AuthorizationPolicy.AllowInvitesFrom -eq "adminsAndMembers") { "PASS" } else { "FAIL" })
+if ($AuthPolicyAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IM.05" -AvailabilityState $AuthPolicyAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IM.05" -Data $InviteSettingData -Result "Guest invite setting is '$($AuthorizationPolicy.AllowInvitesFrom)'" -Status $(if ($AuthorizationPolicy.AllowInvitesFrom -eq "adminsAndMembers") { "PASS" } else { "FAIL" })
+}
 
 Export-SummaryReport "IdentityManagement"
 
 Write-Host "Identity Management audit completed."
+
+
+
 

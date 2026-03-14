@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Privileged Access controls..."
@@ -11,6 +12,8 @@ $CurrentControl = 0
 $UsersById = Get-CachedUsersById
 $Roles = @(Get-CachedRoles)
 $RoleMembers = Get-CachedRoleMembers
+$UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
+$RolesAvailability = Get-AuditFirstUnavailableState -Keys @("Roles")
 
 $GARole = $Roles | Where-Object { $_.DisplayName -eq "Global Administrator" } | Select-Object -First 1
 $GAUsers = @()
@@ -20,12 +23,12 @@ if ($GARole) {
         $User = $UsersById[$Member.Id]
         if ($User) {
             $GAUsers += [PSCustomObject]@{
-                DisplayName          = $User.DisplayName
-                UserPrincipalName    = $User.UserPrincipalName
-                UserType             = $User.UserType
-                AccountEnabled       = $User.AccountEnabled
+                DisplayName           = $User.DisplayName
+                UserPrincipalName     = $User.UserPrincipalName
+                UserType              = $User.UserType
+                AccountEnabled        = $User.AccountEnabled
                 OnPremisesSyncEnabled = $User.OnPremisesSyncEnabled
-                AssignedLicenses     = @($User.AssignedLicenses).Count
+                AssignedLicenses      = @($User.AssignedLicenses).Count
             }
         }
     }
@@ -38,7 +41,15 @@ if ($GARole) {
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.PA.01 Global Administrator count"
 
-Export-ControlResult -ControlID "AAD.PA.01" -Data $GAUsers -Result "$($GAUsers.Count) Global Administrator accounts found" -Status $(if ($GAUsers.Count -ge 2 -and $GAUsers.Count -le 4) { "PASS" } else { "FAIL" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.01" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.01" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.01" -Data $GAUsers -Result "$($GAUsers.Count) Global Administrator accounts found" -Status $(if ($GAUsers.Count -ge 2 -and $GAUsers.Count -le 4) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.PA.02
@@ -55,7 +66,15 @@ $BreakGlassCandidates = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.PA.02" -Data $BreakGlassCandidates -Result "$($BreakGlassCandidates.Count) cloud-only enabled Global Administrator accounts found as break-glass candidates" -Status $(if ($BreakGlassCandidates.Count -gt 0) { "WARNING" } else { "FAIL" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.02" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.02" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.02" -Data $BreakGlassCandidates -Result "$($BreakGlassCandidates.Count) cloud-only enabled Global Administrator accounts found as break-glass candidates" -Status $(if ($BreakGlassCandidates.Count -gt 0) { "WARNING" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.PA.03
@@ -64,6 +83,7 @@ Export-ControlResult -ControlID "AAD.PA.02" -Data $BreakGlassCandidates -Result 
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.PA.03 PIM usage"
 
+$PIMUnavailableState = $null
 try {
     $RoleDefinitions = @(Get-MgRoleManagementDirectoryRoleDefinition -All)
     $EligibilitySchedules = @(Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All)
@@ -71,6 +91,14 @@ try {
 catch {
     $RoleDefinitions = @()
     $EligibilitySchedules = @()
+    $UnavailableStatus = Resolve-AuditUnavailableStatus -ErrorRecord $_
+    if ($UnavailableStatus) {
+        $PIMUnavailableState = [PSCustomObject]@{
+            Status = $UnavailableStatus
+            Reason = "PIM role eligibility data could not be retrieved"
+            Source = "RoleManagement Directory"
+        }
+    }
 }
 
 $EligibleUsers = @(
@@ -89,7 +117,18 @@ $EligibleUsers = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.PA.03" -Data $EligibleUsers -Result "$($EligibleUsers.Count) eligible role assignments found in PIM" -Status $(if ($EligibleUsers.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.03" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.03" -AvailabilityState $RolesAvailability
+}
+elseif ($PIMUnavailableState) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.03" -AvailabilityState $PIMUnavailableState
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.03" -Data $EligibleUsers -Result "$($EligibleUsers.Count) eligible role assignments found in PIM" -Status $(if ($EligibleUsers.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.PA.04
@@ -115,7 +154,15 @@ if ($DeviceRole) {
     }
 }
 
-Export-ControlResult -ControlID "AAD.PA.04" -Data $DeviceAdmins -Result "$($DeviceAdmins.Count) users are assigned to the Device Administrator role" -Status $(if ($DeviceAdmins.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.04" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.04" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.04" -Data $DeviceAdmins -Result "$($DeviceAdmins.Count) users are assigned to the Device Administrator role" -Status $(if ($DeviceAdmins.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.PA.05
@@ -141,11 +188,20 @@ Export-ControlResult -ControlID "AAD.PA.05" -Data $PAWInfo -Result "Manual verif
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.PA.06 Resource Lock custom role"
 
+$AzureRoleUnavailableState = $null
 try {
     $AzureRoleDefinitions = @(Get-MgRoleManagementAzureResourceRoleDefinition -All)
 }
 catch {
     $AzureRoleDefinitions = @()
+    $UnavailableStatus = Resolve-AuditUnavailableStatus -ErrorRecord $_
+    if ($UnavailableStatus) {
+        $AzureRoleUnavailableState = [PSCustomObject]@{
+            Status = $UnavailableStatus
+            Reason = "Azure resource role definitions could not be retrieved"
+            Source = "RoleManagement AzureResource"
+        }
+    }
 }
 
 $LockRoles = @(
@@ -157,7 +213,12 @@ $LockRoles = @(
     Select-Object DisplayName, Id, IsBuiltIn
 )
 
-Export-ControlResult -ControlID "AAD.PA.06" -Data $LockRoles -Result "$($LockRoles.Count) custom Azure roles found with resource lock permissions" -Status $(if ($LockRoles.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($AzureRoleUnavailableState) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.06" -AvailabilityState $AzureRoleUnavailableState
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.06" -Data $LockRoles -Result "$($LockRoles.Count) custom Azure roles found with resource lock permissions" -Status $(if ($LockRoles.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.PA.07
@@ -167,9 +228,17 @@ $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.PA.07 Account separation"
 
 $LicensedAdmins = @($GAUsers | Where-Object { $_.AssignedLicenses -gt 0 })
-Export-ControlResult -ControlID "AAD.PA.07" -Data $LicensedAdmins -Result "$($LicensedAdmins.Count) Global Administrator accounts also look like regular licensed user accounts" -Status $(if ($LicensedAdmins.Count -eq 0) { "PASS" } else { "WARNING" })
+
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.07" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.PA.07" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.PA.07" -Data $LicensedAdmins -Result "$($LicensedAdmins.Count) Global Administrator accounts also look like regular licensed user accounts" -Status $(if ($LicensedAdmins.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 Export-SummaryReport "PrivilegedAccess"
 
 Write-Host "Privileged Access audit completed."
-

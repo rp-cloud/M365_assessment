@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running AAD Alerting & Reporting checks..."
@@ -13,6 +14,9 @@ $UsersById = Get-CachedUsersById
 $Roles = Get-CachedRoles
 $RoleMembers = Get-CachedRoleMembers
 $SignIns = Get-CachedSignIns -Days 30 -Top 40000
+$UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
+$RolesAvailability = Get-AuditFirstUnavailableState -Keys @("Roles")
+$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_30_Top40000")
 
 ############################################################
 # AAD.AR.01
@@ -30,7 +34,12 @@ $FailureData = @(
         @{Name = "FailureReason"; Expression = { $_.Status.FailureReason } }
 )
 
-Export-ControlResult -ControlID "AAD.AR.01" -Data $FailureData -Result "$($FailureData.Count) failed sign-ins in the last 30 days" -Status $(if ($FailureData.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($SignInsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.01" -AvailabilityState $SignInsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.AR.01" -Data $FailureData -Result "$($FailureData.Count) failed sign-ins in the last 30 days" -Status $(if ($FailureData.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.AR.02
@@ -56,7 +65,12 @@ $GeoData = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.AR.02" -Data $GeoData -Result "$($GeoData.Count) users signed in from multiple geographies in the last 30 days" -Status $(if ($GeoData.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($SignInsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.02" -AvailabilityState $SignInsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.AR.02" -Data $GeoData -Result "$($GeoData.Count) users signed in from multiple geographies in the last 30 days" -Status $(if ($GeoData.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.AR.03
@@ -81,7 +95,15 @@ $Assignments = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.AR.03" -Data $Assignments -Result "$($Assignments.Count) current directory role assignments exported for review" -Status "INFO"
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.03" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.03" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.AR.03" -Data $Assignments -Result "$($Assignments.Count) current directory role assignments exported for review" -Status "INFO"
+}
 
 ############################################################
 # AAD.AR.04
@@ -89,6 +111,8 @@ Export-ControlResult -ControlID "AAD.AR.03" -Data $Assignments -Result "$($Assig
 
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.AR.04 Risky sign-ins"
+
+$AR04UnavailableHandled = $false
 
 try {
     $RiskyData = @(
@@ -99,16 +123,32 @@ try {
     $AR04Result = "$($RiskyData.Count) risky sign-ins detected in the last 30 days"
 }
 catch {
-    $RiskyData = @(
-        [PSCustomObject]@{
-            Message = "Unable to read risky sign-ins through Microsoft Graph."
-        }
-    )
-    $AR04Status = "MANUAL"
-    $AR04Result = "Risky sign-ins could not be retrieved automatically"
+    $UnavailableStatus = Resolve-AuditUnavailableStatus -ErrorRecord $_
+
+    if ($UnavailableStatus) {
+        Export-ControlUnavailable `
+            -ControlID "AAD.AR.04" `
+            -Status $UnavailableStatus `
+            -Reason "Risky sign-ins could not be retrieved automatically" `
+            -Source "Get-MgRiskySignIn" `
+            -ErrorRecord $_
+
+        $AR04UnavailableHandled = $true
+    }
+    else {
+        $RiskyData = @(
+            [PSCustomObject]@{
+                Message = "Unable to read risky sign-ins through Microsoft Graph."
+            }
+        )
+        $AR04Status = "MANUAL"
+        $AR04Result = "Risky sign-ins could not be retrieved automatically"
+    }
 }
 
-Export-ControlResult -ControlID "AAD.AR.04" -Data $RiskyData -Result $AR04Result -Status $AR04Status
+if (-not $AR04UnavailableHandled) {
+    Export-ControlResult -ControlID "AAD.AR.04" -Data $RiskyData -Result $AR04Result -Status $AR04Status
+}
 
 ############################################################
 # AAD.AR.05
@@ -123,7 +163,12 @@ $Guests = @(
     Select-Object DisplayName, UserPrincipalName, AccountEnabled, CreatedDateTime
 )
 
-Export-ControlResult -ControlID "AAD.AR.05" -Data $Guests -Result "$($Guests.Count) guest accounts exported for monthly review" -Status "INFO"
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.05" -AvailabilityState $UsersAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.AR.05" -Data $Guests -Result "$($Guests.Count) guest accounts exported for monthly review" -Status "INFO"
+}
 
 ############################################################
 # AAD.AR.06
@@ -150,9 +195,20 @@ $PrivAssignments = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.AR.06" -Data $PrivAssignments -Result "$($PrivAssignments.Count) non-global privileged role assignments exported for review" -Status "INFO"
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.06" -AvailabilityState $UsersAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.AR.06" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.AR.06" -Data $PrivAssignments -Result "$($PrivAssignments.Count) non-global privileged role assignments exported for review" -Status "INFO"
+}
 
 Export-SummaryReport "AAD_AlertingReporting"
 
 Write-Host "Alerting & Reporting audit completed."
+
+
+
 

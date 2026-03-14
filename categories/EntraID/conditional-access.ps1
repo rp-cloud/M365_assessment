@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Conditional Access controls..."
@@ -10,6 +11,8 @@ $CurrentControl = 0
 
 $Policies = @(Get-CachedCAPolicies)
 $Locations = @(Get-CachedLocations)
+$CAAvailability = Get-AuditFirstUnavailableState -Keys @("CAPolicies")
+$LocationAvailability = Get-AuditFirstUnavailableState -Keys @("Locations")
 
 ############################################################
 # AAD.CA.01
@@ -24,7 +27,12 @@ $Trusted = @(
     Select-Object DisplayName, IsTrusted, ODataType, CreatedDateTime, ModifiedDateTime
 )
 
-Export-ControlResult -ControlID "AAD.CA.01" -Data $Trusted -Result "$($Trusted.Count) trusted named locations found" -Status $(if ($Trusted.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($LocationAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.01" -AvailabilityState $LocationAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.01" -Data $Trusted -Result "$($Trusted.Count) trusted named locations found" -Status $(if ($Trusted.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.CA.02
@@ -45,7 +53,12 @@ $RiskPolicies = @(
         @{Name = "GrantControls"; Expression = { $_.GrantControls.BuiltInControls -join "," } }
 )
 
-Export-ControlResult -ControlID "AAD.CA.02" -Data $RiskPolicies -Result "$($RiskPolicies.Count) enabled Conditional Access policies block risky sign-ins" -Status $(if ($RiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.02" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.02" -Data $RiskPolicies -Result "$($RiskPolicies.Count) enabled Conditional Access policies block risky sign-ins" -Status $(if ($RiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.CA.03
@@ -63,16 +76,21 @@ $Exclusions = @(
 
         if ($HasExclusion) {
             [PSCustomObject]@{
-                Policy                 = $Policy.DisplayName
-                ExcludedUsers          = @($Policy.Conditions.Users.ExcludeUsers) -join ","
-                ExcludedGroups         = @($Policy.Conditions.Users.ExcludeGroups) -join ","
-                ExcludedApplications   = @($Policy.Conditions.Applications.ExcludeApplications) -join ","
+                Policy               = $Policy.DisplayName
+                ExcludedUsers        = @($Policy.Conditions.Users.ExcludeUsers) -join ","
+                ExcludedGroups       = @($Policy.Conditions.Users.ExcludeGroups) -join ","
+                ExcludedApplications = @($Policy.Conditions.Applications.ExcludeApplications) -join ","
             }
         }
     }
 )
 
-Export-ControlResult -ControlID "AAD.CA.03" -Data $Exclusions -Result "$($Exclusions.Count) Conditional Access policies contain exclusions" -Status $(if ($Exclusions.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.03" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.03" -Data $Exclusions -Result "$($Exclusions.Count) Conditional Access policies contain exclusions" -Status $(if ($Exclusions.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.CA.04
@@ -88,16 +106,21 @@ $UserScopeIssues = @(
 
         if (($IncludedUsers -notcontains "All") -and $IncludedGroups.Count -eq 0) {
             [PSCustomObject]@{
-                Policy        = $Policy.DisplayName
-                IncludedUsers = $IncludedUsers -join ","
+                Policy         = $Policy.DisplayName
+                IncludedUsers  = $IncludedUsers -join ","
                 IncludedGroups = $IncludedGroups -join ","
-                State         = $Policy.State
+                State          = $Policy.State
             }
         }
     }
 )
 
-Export-ControlResult -ControlID "AAD.CA.04" -Data $UserScopeIssues -Result "$($UserScopeIssues.Count) policies have limited or unclear user scope" -Status $(if ($UserScopeIssues.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.04" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.04" -Data $UserScopeIssues -Result "$($UserScopeIssues.Count) policies have limited or unclear user scope" -Status $(if ($UserScopeIssues.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.CA.05
@@ -109,7 +132,12 @@ Write-Host "[$CurrentControl/$TotalControls] AAD.CA.05 Policies in use"
 $EnabledPolicies = @($Policies | Where-Object { $_.State -eq "enabled" })
 $PolicyInfo = @($Policies | Select-Object DisplayName, State)
 
-Export-ControlResult -ControlID "AAD.CA.05" -Data $PolicyInfo -Result "$($EnabledPolicies.Count) enabled Conditional Access policies found" -Status $(if ($EnabledPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.05" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.05" -Data $PolicyInfo -Result "$($EnabledPolicies.Count) enabled Conditional Access policies found" -Status $(if ($EnabledPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.CA.06
@@ -125,7 +153,7 @@ $PlatformPolicies = @(
 
         if ($IncludePlatforms.Count -gt 0 -or $ExcludePlatforms.Count -gt 0) {
             [PSCustomObject]@{
-                Policy           = $Policy.DisplayName
+                Policy            = $Policy.DisplayName
                 IncludedPlatforms = $IncludePlatforms -join ","
                 ExcludedPlatforms = $ExcludePlatforms -join ","
             }
@@ -133,7 +161,12 @@ $PlatformPolicies = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.CA.06" -Data $PlatformPolicies -Result "$($PlatformPolicies.Count) policies explicitly target or exclude device platforms" -Status $(if ($PlatformPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.06" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.06" -Data $PlatformPolicies -Result "$($PlatformPolicies.Count) policies explicitly target or exclude device platforms" -Status $(if ($PlatformPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.CA.07
@@ -154,7 +187,12 @@ $DeviceEnrollmentPolicies = @(
         @{Name = "GrantControls"; Expression = { $_.GrantControls.BuiltInControls -join "," } }
 )
 
-Export-ControlResult -ControlID "AAD.CA.07" -Data $DeviceEnrollmentPolicies -Result "$($DeviceEnrollmentPolicies.Count) enabled policies require MFA for device registration/enrollment" -Status $(if ($DeviceEnrollmentPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.07" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.07" -Data $DeviceEnrollmentPolicies -Result "$($DeviceEnrollmentPolicies.Count) enabled policies require MFA for device registration/enrollment" -Status $(if ($DeviceEnrollmentPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.CA.08
@@ -175,7 +213,12 @@ $RegistrationPolicies = @(
         @{Name = "GrantControls"; Expression = { $_.GrantControls.BuiltInControls -join "," } }
 )
 
-Export-ControlResult -ControlID "AAD.CA.08" -Data $RegistrationPolicies -Result "$($RegistrationPolicies.Count) enabled policies require MFA for security information registration" -Status $(if ($RegistrationPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.08" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.08" -Data $RegistrationPolicies -Result "$($RegistrationPolicies.Count) enabled policies require MFA for security information registration" -Status $(if ($RegistrationPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.CA.09
@@ -201,7 +244,12 @@ $AppScopingPolicies = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.CA.09" -Data $AppScopingPolicies -Result "$($AppScopingPolicies.Count) policies include specific applications or exclude applications" -Status $(if ($AppScopingPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.09" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.09" -Data $AppScopingPolicies -Result "$($AppScopingPolicies.Count) policies include specific applications or exclude applications" -Status $(if ($AppScopingPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.CA.10
@@ -251,9 +299,16 @@ else {
     "FAIL"
 }
 
-Export-ControlResult -ControlID "AAD.CA.10" -Data $TechnicalAccountExclusions -Result "$($TechnicalAccountExclusions.Count) policies exclude users; $($TechnicalExclusionsWithCompensation.Count) exclusions have a potential compensating enabled policy" -Status $CA10Status
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.10" -AvailabilityState $CAAvailability
+}
+elseif ($LocationAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.CA.10" -AvailabilityState $LocationAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.CA.10" -Data $TechnicalAccountExclusions -Result "$($TechnicalAccountExclusions.Count) policies exclude users; $($TechnicalExclusionsWithCompensation.Count) exclusions have a potential compensating enabled policy" -Status $CA10Status
+}
 
 Export-SummaryReport "ConditionalAccess"
 
 Write-Host "Conditional Access audit completed."
-

@@ -1,6 +1,7 @@
 Clear-Host
 
 . "$PSScriptRoot\modules\reporting.ps1"
+. "$PSScriptRoot\modules\availability.ps1"
 . "$PSScriptRoot\modules\cache_EntraID.ps1"
 . "$PSScriptRoot\modules\framework.ps1"
 . "$PSScriptRoot\modules\bootstrap_EntraID.ps1"

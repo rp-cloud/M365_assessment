@@ -55,7 +55,7 @@ function Add-SummaryEntry {
         [Parameter(Mandatory)]
         [string]$Result,
         [Parameter(Mandatory)]
-        [ValidateSet("PASS", "FAIL", "WARNING", "INFO", "MANUAL", "ERROR")]
+        [ValidateSet("PASS", "FAIL", "WARNING", "INFO", "MANUAL", "ERROR", "NO_ACCESS", "LICENSE_REQUIRED", "NOT_SUPPORTED")]
         [string]$Status
     )
 
@@ -170,6 +170,24 @@ background-color: #f4cccc;
 color: #7f0000;
 font-weight: bold;
 }
+
+.status-no-access {
+background-color: #fce5cd;
+color: #7f6000;
+font-weight: bold;
+}
+
+.status-license-required {
+background-color: #fff2cc;
+color: #7f6000;
+font-weight: bold;
+}
+
+.status-not-supported {
+background-color: #ead1dc;
+color: #741b47;
+font-weight: bold;
+}
 </style>
 "@
 
@@ -181,6 +199,9 @@ font-weight: bold;
             "INFO" { $Class = "status-info" }
             "MANUAL" { $Class = "status-manual" }
             "ERROR" { $Class = "status-error" }
+            "NO_ACCESS" { $Class = "status-no-access" }
+            "LICENSE_REQUIRED" { $Class = "status-license-required" }
+            "NOT_SUPPORTED" { $Class = "status-not-supported" }
             default { $Class = "" }
         }
 
@@ -230,7 +251,7 @@ function Export-ControlResult {
         [Parameter(Mandatory)]
         [string]$Result,
         [Parameter(Mandatory)]
-        [ValidateSet("PASS", "FAIL", "WARNING", "INFO", "MANUAL", "ERROR")]
+        [ValidateSet("PASS", "FAIL", "WARNING", "INFO", "MANUAL", "ERROR", "NO_ACCESS", "LICENSE_REQUIRED", "NOT_SUPPORTED")]
         [string]$Status
     )
 

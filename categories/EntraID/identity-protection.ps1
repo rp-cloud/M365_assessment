@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running Identity Protection controls..."
@@ -15,6 +16,11 @@ $RegistrationDetails = @(Get-CachedUserRegistrationDetails)
 $CAPolicies = @(Get-CachedCAPolicies)
 $Domains = @(Get-CachedDomains)
 $PasswordProtection = Get-CachedPasswordProtectionPolicy
+$RegistrationAvailability = Get-AuditFirstUnavailableState -Keys @("UserRegistrationDetails")
+$PasswordProtectionAvailability = Get-AuditFirstUnavailableState -Keys @("PasswordProtection")
+$RolesAvailability = Get-AuditFirstUnavailableState -Keys @("Roles")
+$DomainsAvailability = Get-AuditFirstUnavailableState -Keys @("Domains")
+$CAAvailability = Get-AuditFirstUnavailableState -Keys @("CAPolicies")
 
 ############################################################
 # AAD.IP.01
@@ -41,7 +47,12 @@ if ($GlobalAdminRole) {
 }
 
 $AdminsWithoutMfa = @($GlobalAdminUsers | Where-Object { $_.IsMfaRegistered -ne $true })
-Export-ControlResult -ControlID "AAD.IP.01" -Data $GlobalAdminUsers -Result "$($AdminsWithoutMfa.Count) Global Administrators are not MFA-registered" -Status $(if ($GlobalAdminUsers.Count -gt 0 -and $AdminsWithoutMfa.Count -eq 0) { "PASS" } else { "FAIL" })
+if ($RegistrationAvailability -and (Test-AuditUnavailableStatus -Status $RegistrationAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.01" -Status $RegistrationAvailability.Status -Reason $RegistrationAvailability.Reason -Source $RegistrationAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.01" -Data $GlobalAdminUsers -Result "$($AdminsWithoutMfa.Count) Global Administrators are not MFA-registered" -Status $(if ($GlobalAdminUsers.Count -gt 0 -and $AdminsWithoutMfa.Count -eq 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.02
@@ -56,7 +67,12 @@ $AltContactData = @(
 )
 
 $UsersMissingRecovery = @($RegistrationDetails | Where-Object { $_.IsSsprRegistered -ne $true })
-Export-ControlResult -ControlID "AAD.IP.02" -Data $AltContactData -Result "$($UsersMissingRecovery.Count) users are not registered for SSPR/recovery information" -Status $(if ($UsersMissingRecovery.Count -eq 0 -and $AltContactData.Count -gt 0) { "PASS" } else { "WARNING" })
+if ($RegistrationAvailability -and (Test-AuditUnavailableStatus -Status $RegistrationAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.02" -Status $RegistrationAvailability.Status -Reason $RegistrationAvailability.Reason -Source $RegistrationAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.02" -Data $AltContactData -Result "$($UsersMissingRecovery.Count) users are not registered for SSPR/recovery information" -Status $(if ($UsersMissingRecovery.Count -eq 0 -and $AltContactData.Count -gt 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.IP.03
@@ -71,7 +87,12 @@ $UsersWithoutMFA = @(
     Select-Object UserDisplayName, UserPrincipalName, IsMfaRegistered, IsSsprEnabled
 )
 
-Export-ControlResult -ControlID "AAD.IP.03" -Data $UsersWithoutMFA -Result "$($UsersWithoutMFA.Count) users are not MFA-registered" -Status $(if ($UsersWithoutMFA.Count -eq 0 -and $RegistrationDetails.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($RegistrationAvailability -and (Test-AuditUnavailableStatus -Status $RegistrationAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.03" -Status $RegistrationAvailability.Status -Reason $RegistrationAvailability.Reason -Source $RegistrationAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.03" -Data $UsersWithoutMFA -Result "$($UsersWithoutMFA.Count) users are not MFA-registered" -Status $(if ($UsersWithoutMFA.Count -eq 0 -and $RegistrationDetails.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.04
@@ -87,7 +108,12 @@ $PasswordPolicy = @(
 )
 
 $NonCompliantPasswordDomains = @($PasswordPolicy | Where-Object { $_.Compliant -ne $true })
-Export-ControlResult -ControlID "AAD.IP.04" -Data $PasswordPolicy -Result "$($NonCompliantPasswordDomains.Count) verified domains do not meet the 365 days / never expire requirement" -Status $(if ($NonCompliantPasswordDomains.Count -eq 0 -and $PasswordPolicy.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($DomainsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.04" -AvailabilityState $DomainsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.04" -Data $PasswordPolicy -Result "$($NonCompliantPasswordDomains.Count) verified domains do not meet the 365 days / never expire requirement" -Status $(if ($NonCompliantPasswordDomains.Count -eq 0 -and $PasswordPolicy.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.05
@@ -120,7 +146,12 @@ $SignInRiskPolicies = @(
         @{Name = "SignInRiskLevels"; Expression = { $_.Conditions.SignInRiskLevels -join "," } }
 )
 
-Export-ControlResult -ControlID "AAD.IP.06" -Data $SignInRiskPolicies -Result "$($SignInRiskPolicies.Count) enabled policies handle sign-in risk" -Status $(if ($SignInRiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.06" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.06" -Data $SignInRiskPolicies -Result "$($SignInRiskPolicies.Count) enabled policies handle sign-in risk" -Status $(if ($SignInRiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.07
@@ -136,7 +167,12 @@ $UserRiskPolicies = @(
         @{Name = "UserRiskLevels"; Expression = { $_.Conditions.UserRiskLevels -join "," } }
 )
 
-Export-ControlResult -ControlID "AAD.IP.07" -Data $UserRiskPolicies -Result "$($UserRiskPolicies.Count) enabled policies handle user risk" -Status $(if ($UserRiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.07" -AvailabilityState $CAAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.07" -Data $UserRiskPolicies -Result "$($UserRiskPolicies.Count) enabled policies handle user risk" -Status $(if ($UserRiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.08
@@ -154,7 +190,12 @@ $LockoutThresholdData = @(
 )
 
 $ThresholdCompliant = $null -ne $PasswordProtection -and $PasswordProtection.lockoutThreshold -eq 10
-Export-ControlResult -ControlID "AAD.IP.08" -Data $LockoutThresholdData -Result "Current lockout threshold: $($PasswordProtection.lockoutThreshold)" -Status $(if ($ThresholdCompliant) { "PASS" } else { "FAIL" })
+if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.08" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.08" -Data $LockoutThresholdData -Result "Current lockout threshold: $($PasswordProtection.lockoutThreshold)" -Status $(if ($ThresholdCompliant) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.09
@@ -169,7 +210,12 @@ $UsersWithoutSSPR = @(
     Select-Object UserDisplayName, UserPrincipalName, IsSsprRegistered, IsSsprEnabled
 )
 
-Export-ControlResult -ControlID "AAD.IP.09" -Data $UsersWithoutSSPR -Result "$($UsersWithoutSSPR.Count) users are not registered for self-service password reset" -Status $(if ($UsersWithoutSSPR.Count -eq 0 -and $RegistrationDetails.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($RegistrationAvailability -and (Test-AuditUnavailableStatus -Status $RegistrationAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.09" -Status $RegistrationAvailability.Status -Reason $RegistrationAvailability.Reason -Source $RegistrationAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.09" -Data $UsersWithoutSSPR -Result "$($UsersWithoutSSPR.Count) users are not registered for self-service password reset" -Status $(if ($UsersWithoutSSPR.Count -eq 0 -and $RegistrationDetails.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.10
@@ -185,7 +231,12 @@ $LockoutDurationData = @(
 )
 
 $DurationCompliant = $null -ne $PasswordProtection -and $PasswordProtection.lockoutDurationInSeconds -ge 1800
-Export-ControlResult -ControlID "AAD.IP.10" -Data $LockoutDurationData -Result "Current lockout duration: $($PasswordProtection.lockoutDurationInSeconds) seconds" -Status $(if ($DurationCompliant) { "PASS" } else { "FAIL" })
+if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.10" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.10" -Data $LockoutDurationData -Result "Current lockout duration: $($PasswordProtection.lockoutDurationInSeconds) seconds" -Status $(if ($DurationCompliant) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.11
@@ -203,7 +254,12 @@ $BannedPasswordData = @(
     }
 )
 
-Export-ControlResult -ControlID "AAD.IP.11" -Data $BannedPasswordData -Result "$($CustomBannedPasswords.Count) custom banned passwords configured" -Status $(if ($CustomBannedPasswords.Count -gt 0) { "PASS" } else { "FAIL" })
+if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
+    Export-ControlUnavailable -ControlID "AAD.IP.11" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.11" -Data $BannedPasswordData -Result "$($CustomBannedPasswords.Count) custom banned passwords configured" -Status $(if ($CustomBannedPasswords.Count -gt 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.IP.12
@@ -238,9 +294,20 @@ $PhishingResistantPolicy = @(
         @{Name = "AuthenticationStrengthId"; Expression = { $_.GrantControls.AuthenticationStrength.Id } }
 )
 
-Export-ControlResult -ControlID "AAD.IP.12" -Data $(if ($PhishingResistantPolicy.Count -gt 0) { $PhishingResistantPolicy } else { $PrivilegedAccounts }) -Result $(if ($PhishingResistantPolicy.Count -gt 0) { "$($PhishingResistantPolicy.Count) authentication strength policies found for strong MFA" } else { "No phishing-resistant MFA policy evidence found for privileged users" }) -Status $(if ($PhishingResistantPolicy.Count -gt 0) { "WARNING" } else { "FAIL" })
+if ($CAAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.12" -AvailabilityState $CAAvailability
+}
+elseif ($RolesAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.12" -AvailabilityState $RolesAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.IP.12" -Data $(if ($PhishingResistantPolicy.Count -gt 0) { $PhishingResistantPolicy } else { $PrivilegedAccounts }) -Result $(if ($PhishingResistantPolicy.Count -gt 0) { "$($PhishingResistantPolicy.Count) authentication strength policies found for strong MFA" } else { "No phishing-resistant MFA policy evidence found for privileged users" }) -Status $(if ($PhishingResistantPolicy.Count -gt 0) { "WARNING" } else { "FAIL" })
+}
 
 Export-SummaryReport "IdentityProtection"
 
 Write-Host "Identity Protection audit completed."
+
+
+
 

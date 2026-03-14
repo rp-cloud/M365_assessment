@@ -1,4 +1,5 @@
 . "$PSScriptRoot\..\..\modules\reporting.ps1"
+. "$PSScriptRoot\..\..\modules\availability.ps1"
 . "$PSScriptRoot\..\..\modules\cache_EntraID.ps1"
 
 Write-Host "Running External Collaboration controls..."
@@ -11,6 +12,9 @@ $CurrentControl = 0
 $Users = Get-CachedUsers
 $SignIns90 = Get-CachedSignIns -Days 90
 $GuestUsers = @($Users | Where-Object { $_.UserType -eq "Guest" })
+$UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
+$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_90")
+$OrganizationAvailability = Get-AuditFirstUnavailableState -Keys @("Organization")
 
 $LastSignInByUser = @{}
 foreach ($Entry in ($SignIns90 | Where-Object { $_.UserPrincipalName })) {
@@ -37,7 +41,15 @@ $InactiveExternal30 = @(
         @{Name = "LastSignInDateTime"; Expression = { if ($LastSignInByUser.ContainsKey($_.UserPrincipalName)) { $LastSignInByUser[$_.UserPrincipalName] } else { $null } } }
 )
 
-Export-ControlResult -ControlID "AAD.EC.01" -Data $InactiveExternal30 -Result "$($InactiveExternal30.Count) guest accounts show no sign-in activity in the last 30 days" -Status $(if ($InactiveExternal30.Count -eq 0) { "PASS" } else { "WARNING" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.EC.01" -AvailabilityState $UsersAvailability
+}
+elseif ($SignInsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.EC.01" -AvailabilityState $SignInsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.EC.01" -Data $InactiveExternal30 -Result "$($InactiveExternal30.Count) guest accounts show no sign-in activity in the last 30 days" -Status $(if ($InactiveExternal30.Count -eq 0) { "PASS" } else { "WARNING" })
+}
 
 ############################################################
 # AAD.EC.02
@@ -57,7 +69,15 @@ $InactiveExternal90 = @(
         @{Name = "LastSignInDateTime"; Expression = { if ($LastSignInByUser.ContainsKey($_.UserPrincipalName)) { $LastSignInByUser[$_.UserPrincipalName] } else { $null } } }
 )
 
-Export-ControlResult -ControlID "AAD.EC.02" -Data $InactiveExternal90 -Result "$($InactiveExternal90.Count) guest accounts show no sign-in activity in the last 90 days" -Status $(if ($InactiveExternal90.Count -eq 0) { "PASS" } else { "FAIL" })
+if ($UsersAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.EC.02" -AvailabilityState $UsersAvailability
+}
+elseif ($SignInsAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.EC.02" -AvailabilityState $SignInsAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.EC.02" -Data $InactiveExternal90 -Result "$($InactiveExternal90.Count) guest accounts show no sign-in activity in the last 90 days" -Status $(if ($InactiveExternal90.Count -eq 0) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.EC.03
@@ -74,7 +94,12 @@ $Lockbox = @(
 )
 
 $LockboxEnabled = ($Lockbox | Where-Object { $_.LockboxEnabled -eq "Yes" }).Count -gt 0
-Export-ControlResult -ControlID "AAD.EC.03" -Data $Lockbox -Result $(if ($LockboxEnabled) { "Customer Lockbox is enabled" } else { "Customer Lockbox is not enabled" }) -Status $(if ($LockboxEnabled) { "PASS" } else { "FAIL" })
+if ($OrganizationAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.EC.03" -AvailabilityState $OrganizationAvailability
+}
+else {
+    Export-ControlResult -ControlID "AAD.EC.03" -Data $Lockbox -Result $(if ($LockboxEnabled) { "Customer Lockbox is enabled" } else { "Customer Lockbox is not enabled" }) -Status $(if ($LockboxEnabled) { "PASS" } else { "FAIL" })
+}
 
 ############################################################
 # AAD.EC.04
@@ -97,8 +122,9 @@ catch {
             Message = "Delegated administration relationships could not be retrieved automatically."
         }
     )
-    $EC04Status = "MANUAL"
-    $EC04Result = "Delegated administration relationships require manual verification"
+    $UnavailableStatus = Resolve-AuditUnavailableStatus -ErrorRecord $_
+    $EC04Status = if ($UnavailableStatus) { $UnavailableStatus } else { "MANUAL" }
+    $EC04Result = if ($UnavailableStatus) { "Delegated administration relationships could not be retrieved automatically" } else { "Delegated administration relationships require manual verification" }
 }
 
 if (-not $EC04Status) {
@@ -112,4 +138,5 @@ Export-ControlResult -ControlID "AAD.EC.04" -Data $Partners -Result $EC04Result 
 Export-SummaryReport "ExternalCollaboration"
 
 Write-Host "External Collaboration audit completed."
+
 
