@@ -1,0 +1,554 @@
+[
+  {
+    "Control_ID": "AAD.AR.01",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure that the signs-ins after multiple failures report is reviewed weekly",
+    "Recommendation": "Establish regular process of review 'Sign-in Failure' report (weekly, bi-weekly or monthly). Reviewing this report on a regular basis allows for identification and remediation of compromised accounts",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.AR.02",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure that the signs-ins from multiple geographies report is reviewed weekly",
+    "Recommendation": "Establish regular process of review 'Sign-ins from multiple geographies' report (weekly, bi-weekly or monthly)  - Risky Sign-ins. Reviewing this report on a regular basis allows for identification and remediation of compromised accounts",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.AR.03",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure that the Azure AD roles are reviewed weekly",
+    "Recommendation": "Establish regular process of periodic Access Review for all Azure AD roles. To define process, recommended is to use Privileged Identity Management Solution to configure recurring access review to revoke unneeded permissions over time\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.AR.04",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure that the signs-ins from unknown sources report is reviewed weekly",
+    "Recommendation": "Establish regular process of review 'Sign-ins from uknown sources (for e.g. a TOR IP Address) - Risky Sign-ins' . Reviewing this report on a regular basis allows for identification and remediation of compromised accounts",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.AR.05",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure the list of external users that you have invited to documents is reviewed monthly",
+    "Recommendation": "Perform 'Access Review' process for external users that you have invited to documents stored on Sharepoint and OneDrive every '30' days\n\nThe recommendation is a part of Control ID: AAD.IM.04",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.AR.06",
+    "MS_Service": "Microsoft Entra ID - Alerting and Reporting",
+    "M365_Control": "Ensure non-global administrators are reviewed weekly",
+    "Recommendation": "Establish regular process of periodic Access Review for all Azure AD roles. To define process, recommended is to use Privileged Identity Management Solution to configure recurring access review to revoke unneeded permissions over time\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.01",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Trusted Locations' are defined",
+    "Recommendation": "Define 'Trusted Locations'",
+    "Expected_Value": "Trusted Locations are defined as the specific IPs, and checked as trusted.\nPossible need of acquiring the list of specific IP list before\nIf there is not a list of IP addresses for trusted locations, possible need of designating specific ones.\n",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.02",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Conditional Access' Policies Block Risky Sign-in",
+    "Recommendation": "Recommend is to migrate 'Identity Protection Policies' to 'Conditional Access' for the following benefits:\n  - Enhanced diagnostic data\n  - Report-only mode integration\n  - Graph API support\n  - Use more 'Conditional Access' attributes like sign-in frequency in the policy",
+    "Expected_Value": "Created conditional access policy with appropriate settings",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.03",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that exclusions in 'Conditional Access' policies are managed correctly",
+    "Recommendation": "Ensure that only 'Break Glass Account' is excluded from policies. Every policy should cover all users, applications and device platforms in scope of the policy, or for defined group of users for whom the policy should be applied. Every exclusion from policy should be regularly reviewed, managed (for e.g. define trusted IP address and move to dedicated Conditional Access Policy) and removed if exclusion is no more required.",
+    "Expected_Value": "Confirm who should be excluded, and if the mentioned accounts are excluded in the Exclude tab of the Conditional Access Policies",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.04",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Conditional Access' Policies are enforced for all users in scope",
+    "Recommendation": "Each 'Conditional Access' policy should cover all users in scope of policy. or for defined group of users for whom the policy should be applied.",
+    "Expected_Value": "All the Conditional Access policies are assigned to the proper groups and users",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.05",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Conditional Access' Policies are in use",
+    "Recommendation": "Consider creating 'Conditional Access' policies or re-enabling Secure Defaults. If the Te"N/A"t is not licensed for Conditional Access, consider enabling Secure Defaults",
+    "Expected_Value": "Configured conditional access policies",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.06",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Conditional Access' Policies do not include or explicitly exclude device platforms",
+    "Recommendation": "Review existing 'Conditional Access' Policies and determine if all device platforms are accounted for. If device platforms are not accounted for, it is recommended to configure or create policies to target the missing platforms.",
+    "Expected_Value": "There are no device platforms specified in the 'included' or 'excluded' ",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.07",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Multifactor authentication' is required for Intune device enrollments",
+    "Recommendation": "1. Create dedicated 'Conditional Access' that required 'Multifactor Authentication' policy for Intune Device enrollments\n2. Set 'Require Multifactor Authentication to register or join devices with Microsoft Entra' to 'Yes' in Microsoft Entra ID -> Devices -> Device setting",
+    "Expected_Value": "1. Created conditional access policy with 'Grant' set to 'Grant access: Require multifactor authentication'\n2. Yes",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.08",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Multifactor authentication' is required for security information registration",
+    "Recommendation": "Create dedicated 'Conditional Access' that required 'Multifactor Authentication' policy for Security Information Registration",
+    "Expected_Value": "Created conditional access policy with 'Grant' set to 'Grant access: Require multifactor authentication'",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.10",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that technical/service accounts that are exlcuded from existing Conditional Access policies have defined 'Trusted IP Addresses' and the dedicated conditional access for these accounts is created and enabled  ",
+    "Recommendation": "- Add new Trusted Location '[Trusted Location name]' and add [IP from which that account establish connection] IP address as trusted\n- Add account to new Security Group 'MFA Technical Accounts' for technical accounts (both with privileged and non-privileged role assignment)\n- Add account to Conditional Access policy for technical accounts and exclude trusted location '[Trusted Location name]'.\n  or delete exclusion for account in Conditional Access policy '[Policy name]'",
+    "Expected_Value": "Created conditional access policy with appropriate settings",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.EC.01",
+    "MS_Service": "Microsoft Entra ID - External Collaboration",
+    "M365_Control": "Ensure that external accounts (on te"N/A"t level) not used in last '30' days are disabled",
+    "Recommendation": "Review all external accounts with a last sign-in date greater than 30 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID Te"N/A"t. Due to fact that there may be different situations and business needs, the gover"N/A"ce of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 30 days)\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "CSV or API proof of the said accounts being disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.EC.02",
+    "MS_Service": "Microsoft Entra ID - External Collaboration",
+    "M365_Control": "Ensure that guest accounts (on te"N/A"t level) not used in last '90' days are disabled",
+    "Recommendation": "Review all guest accounts with a last sign-in date greater than 90 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID. ue to fact that there may be different situations and business needs, the gover"N/A"ce of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 90 days).\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "CSV or API proof of the said accounts being disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.EC.03",
+    "MS_Service": "Microsoft Entra ID - External Collaboration",
+    "M365_Control": "Ensure the 'Customer Lockbox' feature is 'Enabled'",
+    "Recommendation": "Set 'Customer Lockbox' to 'Enabled'",
+    "Expected_Value": "Enabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.EC.04",
+    "MS_Service": "Microsoft Entra ID - External Collaboration",
+    "M365_Control": "Ensure that there are no External partners with delegated administration privileges and global administrator roles without expiration date",
+    "Recommendation": "Review list of added partners and remove if contract has been expired\nDuring adding new Partner as delegated administrator, insert 'Expiration' as a date when contract will expire",
+    "Expected_Value": "There are no partners with 'expired' status on list",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.01",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Optimize reauthentication prompts and  session lifetime for Azure AD Multi-Factor Authentication",
+    "Recommendation": "To give your users the right balance of security and ease of use by asking them to sign in at the right frequency. \n  - If re-authentication will be considered as required, create 'Conditional Access' sign in frequency policy across all organizational devices and users\n  - For users that sign in from non-managed devices or mobile devices, create 'Conditional Access' policy with sign-in frequency policy with slightly limited duration to an appropriate time based on the sign-in risk, where a user with less risk has a longer session duration",
+    "Expected_Value": "Created Conditional Access Policy and all guideline recommendations have been met",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.02",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure proper revocation method of access and refresh token for account compromise for hybrid identities",
+    "Recommendation": "Redefine Incident Response Plan or Change Configuration in your te"N/A"t settings\nThere are several options that can protect against account compromise. All of these options involve process changes except one that involves a change in the way password hash sync works. It is important to do what you believe is best for your organization while also keeping in mind that process failures happen more often than configuration failures.\n\n  - No longer check the box that states “user must change password at next logon” when changing a password and rely on the user to change the password again.\n  - Change the password without the box that states “user must change password at next logon” and then change it again with the box selected.\n  - After changing a compromised accounts credentials, run the mentioned PowerShell cmdlet to revoke all refresh tokens for the account.\n  - Change the password in Azure Active Directory instead of on-premise Active Directory. Note that this will only work if you have write-back enabled so it can write back to your on-premise Active Directory.\n  - Implement the following change (that Microsoft has thankfully added functionality for) against your AAD environment. This will force these “non-secret” or “temporary passwords” to sync with AAD. The field “ForcePasswordResetOnLogonFeature” is set to “$false” by default and can be changed. Run the following command via PowerShell.\n\nThe recommendation is a part of Control ID: INCD.RE.01",
+    "Expected_Value": "Interview about the method used for revoking. Check if the Azure AD admin can carry out the revoking process using powershell (e.g. 'Disable-ADAccount' and '' Set-ADAccountPassword'",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.03",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure that 'Groups and Sharepoint sites' that had last activity older than 90 days are disabled and/or deleted from Microsoft Entra ID",
+    "Recommendation": "Sites and teams groups with last activity older than 90 days should be regularly checked and automatically or manually deleted to ensure proper security hygiene of Microsoft 365 te"N/A"t. \n\nThe recommendation is a part of Control ID: AAD.SC.16",
+    "Expected_Value": "No Groups and Sharepoint sites with last activity older than 90 days",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.04",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure that email address is added to notify about Azure Service outages",
+    "Recommendation": "Add email of user or dedicated shared mailbox for notifications about Azure Service outages",
+    "Expected_Value": "There is at least one email address added to the existing alert",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.05",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure that external identities are not getting email notifications about 'Users at risk detected alerts' ",
+    "Recommendation": "Review the list of users who are getting email notifications 'Users at risk detected alerts' and make sure external identities are not on that list",
+    "Expected_Value": "There are no 'external users' identities on the 'users at risk detected allerts' recipient list",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.06",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure that Microsoft Entra ID 'Terms of Use' are uploaded",
+    "Recommendation": "Upload 'Terms of use' for external users in 'Microsoft Entra ID'",
+    "Expected_Value": "Uploaded 'Terms of use'",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.GV.07",
+    "MS_Service": "Microsoft Entra ID - Gover"N/A"ce",
+    "M365_Control": "Ensure that external identities are not getting email notifications about 'Weekly digest' ",
+    "Recommendation": "Review the list of users who are getting email notifications 'Users at risk detected alerts' and make sure external identities are not on that list",
+    "Expected_Value": "No external identities on list",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IM.01",
+    "MS_Service": "Microsoft Entra ID - Identity Management",
+    "M365_Control": "Ensure that internal accounts (on te"N/A"t level) not used in last 30 days are 'Disabled'",
+    "Recommendation": "Review all internal accounts synchronized to Microsoft Entra ID ('Azure Active Directory') with a last sign-in date greater than 30 days ago (or greater based on business requriements) and block sign-in to the account or delete it from your local directory. Due to fact that there may be situations that users can request for long term absence (unpaid holidays, maternity leave) the process should be automated as best effort (for e.g additional custom atribute with user's status synchronized from HRIS to local AD system).",
+    "Expected_Value": "Interview whether there are procedures for carrying out Identity Lifecycle management. If there are such procedures, who is responsible for carrying them out, are there documents on the procedures, are there any documentation regarding the effect of such management, check whether there is evidence of a connection between the records system and databases.",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IM.02",
+    "MS_Service": "Microsoft Entra ID - Identity Management",
+    "M365_Control": "Ensure the lifecycle of identities and entitlements is managed",
+    "Recommendation": "Establish well-defined process of Identity Gover"N/A"ce process to manage identity and access lifecycle at scale. ",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IM.03",
+    "MS_Service": "Microsoft Entra ID - Identity Management",
+    "M365_Control": "Ensure the process of reviewing and reconciling user access is completed regularly",
+    "Recommendation": "Establish regular process of periodic Access Review for all users in organization (not limited only to Global Administrators and other administrative roles). To define process, recommended is to use Privileged Identity Management Solution to configure process for periodic access review including following practices:\n  1. Apply principle of least privilege - Define a list of users for whom additional permissions may be required and a list of these permissions\n  2. Grant just-in-time access - Define access policy only when required which actions that are required before activation the role (requesting, approval form, justification)\n  3. Protect accounts - Turn on multifactor authentication for all administrator accounts before role activation\n  4. Regular access reviews - Perform regular access reviews to revoke access automatically\n  5. Limit usage of Global Administrator accounts - There should be defined less than 5 global administrators and only privileged users should request for this role. Global Administrator Account should not be used for day to day tasks and these activities should be replaced with Azure AD roles\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "Documentation needed for reviews carried out. Checking the dates of reviews. If the inspection is performed before the review date in a given month or for the first time, the Tester Guideline should be followed.",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IM.04",
+    "MS_Service": "Microsoft Entra ID - Identity Management",
+    "M365_Control": "Ensure an 'Access Review' process for Teams and Sharepoint sites based on Microsoft 365 Groups is performed regularly",
+    "Recommendation": "Perform regular process of 'Access Review' of membership for all Teams and Microsoft 365 Groups. To automate the process it is recommended to use Microsoft Entra ID Identity Gover"N/A"ce 'Access Review' service or other third party solution if applicable. \n\nThe recommendation is a part of Control ID: AAD.SC.16",
+    "Expected_Value": "There is a policy specifying the inactivity timespan.\nIt is enabled.\nThere are no inactive users in the inactive users list, if there are, the whole process described in Guidance should be carried out",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IM.05",
+    "MS_Service": "Microsoft Entra ID - Identity Management",
+    "M365_Control": "Ensure that 'Guest invite settings' is set to 'Member users and users assigned to specific admin roles can invite guest users including guests with member permissions'",
+    "Recommendation": "Set 'Guest invite settings' to 'Member users and users assigned to specific admin roles can invite guest users including guests with member permissions'",
+    "Expected_Value": "Member users and users assigned to specific admin roles can invite guest users including guests with member permissions",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.01",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Multi-factor authentication' is enforced for all global administrators",
+    "Recommendation": "Enforce MFA for all [number] global administrator accounts",
+    "Expected_Value": "MFA enforced for all [number] global administrator accounts",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.02",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Alternate contact info' details are completed for 'Multifactor authentication' and Self Service Password Reset process",
+    "Recommendation": "Complete 'Alternative contact info' details for MFA and Self Service Password Reset process\n\nThe recommendation is a part of Control ID: AAD.IP.04",
+    "Expected_Value": "Completed for all users",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.03",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Multifactor authentication' is enabled for all users in organization",
+    "Recommendation": "Enable 'Multifactor authentication' for all users in the organization.\n\nThe recommendation is a part of Control ID: AAD.IP.04 and AAD.GV.01",
+    "Expected_Value": "MFA for all users set to 'Enabled'",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.04",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure password are set to 'Never Expire' or to '365 days'",
+    "Recommendation": "Set password to 'Never expire' or change password duration to '365' days for regular user's accounts. This setting requires equivalent level of maturity in Identity and Access Management Process. Maturity can be reached by: \n  - integrating all internal applications exposed to public internet with Single Sign On when your primary Identity Provider will be Microsoft Entra ID\n  - Implementation Multifactor Authentication\n  - Implementing relevant security configuration to end user workstations (cloud PC only, Hybrid Joined, Bring your own device technical measures and protection)\n  - Password entropy level\n  - Blocking simple passwords \n\nThe recommendation is a part of Control ID: M365.GS.06",
+    "Expected_Value": "Passwords dont expire, the box is unchecked",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.05",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that password complexity from AD meets Microsoft Recommendations",
+    "Recommendation": "Ensure that Password Policy meets current standards and recommendations",
+    "Expected_Value": "Password must meet complexity requirements' is set to 'Enabled'",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.06",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that Microsoft Entra ID Identity Protection 'Sign-in Risk Policies' are 'Enabled'",
+    "Recommendation": "Set 'Sign-in risk policy' to 'Enabled'",
+    "Expected_Value": "Enabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.07",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that Azure AD Identity Protection 'User Risk Policies' are 'Enabled'",
+    "Recommendation": "Set 'User risk policy' to 'Enabled'",
+    "Expected_Value": "Enabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.08",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Account lock threshold' is set to '10'",
+    "Recommendation": "Set 'Account lock threeshold' to '10'",
+    "Expected_Value": "Account lock threeshold is set to 10",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.09",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure 'Self-service password reset' is 'Enabled' for all users in organization",
+    "Recommendation": "Enable 'Self-service password reset' for all users. \n\nThe recommendation is a part of Control ID: AAD.IP.02",
+    "Expected_Value": "Self service password reset enabled for all users or licensed only",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.10",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Account lockout duration' is higher than '1800'",
+    "Recommendation": "Set 'Account lockout duration' to '920' or higher. \n\nThe recommendation is a part of Control ID: AAD.IP.04",
+    "Expected_Value": "3600 or higher",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.11",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that 'Custom banned password list' is configured",
+    "Recommendation": "Configure and enable 'Custom banned password' list to block simple and common passwords. \n\nThe recommendation is a part of Control ID: AAD.IP.04",
+    "Expected_Value": "Enforce custon list is set to yes, and the strings of predicted dangerous passwords are added to the list.",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.IP.12",
+    "MS_Service": "Microsoft Entra ID - Identity Protection",
+    "M365_Control": "Ensure that Phishing-resistant multifactor authentication is enforced for administrators",
+    "Recommendation": "Setup strong multifactor authentication for all administrator accounts with following MFA combination of authenticaiton:\n  - Require Windows Hello for Business or,\n  - Require FIDO2 Security Key or,\n  - Certificate Based Authentication",
+    "Expected_Value": "Conditional Access Policy deployed with enforced Phishing resistant MFA for all administrator accounts or users in scope of policy",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.01",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that between two and four global administrator accounts are created",
+    "Recommendation": "Ensure that between two and four global admins are designated",
+    "Expected_Value": "Between 2 and 4",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.02",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that 'Break Glass Account' is 'Cloud-only'",
+    "Recommendation": "Ensure 'Break Glass Account' are created and configured to be 'Cloud-only' with permanently assigned 'Global Administrator' role and excluded from all 'Conditional Access' policies. Password for the account should be stored in secure vault and activity of the account should be monitored for its usage. Access to the Break Glass Account should be allowed only from selected and trusted locations (e.g. Main Office)",
+    "Expected_Value": "Break Glass Account is Cloud only",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.03",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that 'Privileged Identity Management' access to Office 365 roles is in use",
+    "Recommendation": "'Eligible Assignments' in 'Privileged Identity Management' for Office 365 should be in use. There should be defined rules for whom and what permissions can be requested to limit usage the role only for time to perform task or group of activities.\n\nThe recommendation is a part of Control ID: AAD.IM.02",
+    "Expected_Value": "Check if all of the roles in guidance have been made eligible",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.04",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that no non-IT administrators are assigned as a Device Administrators",
+    "Recommendation": "Review list of users that has been added as Device Administrators and remove unnecessary priviledges ",
+    "Expected_Value": "None of the non-IT admins are assigned as Device Administrators",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.05",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that privileged access workstations are in use for administrative tasks",
+    "Recommendation": "N/A",
+    "Expected_Value": "Check on the machine used by the admins, and if rules and policies for its use are in place",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.06",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure Custom Role is assigned for Administering 'Resource Locks'",
+    "Recommendation": "Assign Custom Role for Administering Resource Locks ",
+    "Expected_Value": "Custom Role for administering resource locks exist",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.PA.07",
+    "MS_Service": "Microsoft Entra ID - Privileged Access ",
+    "M365_Control": "Ensure that highly privileged/administrative users are separated from regular accounts",
+    "Recommendation": "Ensure you are identifying all high business impact accounts. Limit the number of privileged/administrative accounts in your cloud's control plane, management plane and data/workload plane",
+    "Expected_Value": "All Global administrator accounts are separated from regular accounts",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.CA.09",
+    "MS_Service": "Microsoft Entra ID - Conditional Access",
+    "M365_Control": "Ensure that 'Conditional Access' Policies do not include or explicitly exclude applications",
+    "Recommendation": "Review exceptions for users and applications, if needed, keep exclusions please add trusted locations for associated accounts and applications",
+    "Expected_Value": "N/A",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.01",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Restrict non-admin users from creating te"N/A"ts' is set to 'Yes'",
+    "Recommendation": "Set 'Restrict non-admin users from creating te"N/A"ts' to 'Yes'",
+    "Expected_Value": "Yes",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.02",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Legacy Authentication' is blocked by at least one of following option:\n  - Conditional Access Policy\n  - Enforced 'Security Defaults' on te"N/A"t\nor: \n  - Disabled IMAP, SMTP, POP3 protocols in Exchange Online\n  - Blocked Legacy Authentication for Sharepoint and OneDrive",
+    "Recommendation": "1. Create Contitional Access Policy that block all 'Legacy Authentication' protocols\n2. Enable 'Security defaults' on te"N/A"t level\n3. Disable POP3, IMAP, SMTP for Exchange and Legacy authentication for Sharepoint and OneDrive",
+    "Expected_Value": "All Legacy Authentication protocols are blocked or disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.03",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Users consent for applications' is set to 'Do not allow user consent'",
+    "Recommendation": "Set 'Users consent for applications' to 'Do not allow user consent'",
+    "Expected_Value": "Do not allow user consent",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.04",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Users can register applications' is set to 'No'",
+    "Recommendation": "Set 'Users can register applications' is set to 'No'",
+    "Expected_Value": "No",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.05",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Guest user access' is set to 'Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)'",
+    "Recommendation": "Set 'Guest user access' to 'Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)'",
+    "Expected_Value": "Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.06",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Guest invite restrictions' is set to 'Only users assigned to specific admin roles can invite guest users'",
+    "Recommendation": "Set 'Guest invite restrictions' to 'Only users assigned to specific admin roles can invite guest users'",
+    "Expected_Value": "Only users assigned to specific admin roles can invite guest users",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.07",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Require write permissions for creating new management groups' is set to 'Yes'",
+    "Recommendation": "Set 'Require write permissions for creating new management groups' to 'Yes'",
+    "Expected_Value": "Yes",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.08",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure Security Defaults (only if Conditional Access Policies is disabled)is enabled on Microsoft Entra ID",
+    "Recommendation": "Enable Security Defaults on Azure AD if Conditional Access policies are not in use. In other cases is recommended to disable Security Defaults to avoid conflicts",
+    "Expected_Value": "Enabled if no conditional access polcies in place",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.09",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Restrict user ability to access groups features in the My Groups' is set to 'Yes'",
+    "Recommendation": "Set 'Restrict user ability to access groups features in the My Groups' to 'Yes'",
+    "Expected_Value": "Yes",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.10",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Users can create security groups in Azure Portals' is set to 'No'",
+    "Recommendation": "Set 'Users can create security groups in Azure Portals, API or PowerShell' to 'No'",
+    "Expected_Value": "No",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.11",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Owners can manage group membership requests in the Access Panel' is set to 'No'",
+    "Recommendation": "Set 'Owners can manage group membership requests in the Access Panel' to 'No'",
+    "Expected_Value": "No",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.12",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Users can create Microsoft 365 groups in Azure Portals' is set to 'No'",
+    "Recommendation": "Set 'Users can create Microsoft 365 groups in Azure Portals' to 'No' ",
+    "Expected_Value": "No",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.13",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Restrict access to Microsoft Entra ID administration portal' is set to 'Yes'",
+    "Recommendation": "Set 'Restrict access to Microsoft Entra ID administration portal' to 'Yes'",
+    "Expected_Value": "Yes",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.14",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Sign me out when inactive' is set to '1 hour' for Administrative Access to Portal",
+    "Recommendation": "Set 'Sign me out when inactive' is set to '1 hour' for Administrative Access to Portal\n\nThe recommendation is a part of Control ID: and AAD.GV.01",
+    "Expected_Value": "1 hour",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.15",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Company Branding' is configured",
+    "Recommendation": "'Company branding' should be configured to to prettify the sign-in experience for end-users",
+    "Expected_Value": "Ask the administrator about company branding guidelines\nThe Company branding is configured according to the guidelines",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.16",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Group lifetime (in days)' settings are configured for Groups",
+    "Recommendation": "Set 'Group lifetime (in days)' to '90 (days)' and provide an email address where expiration notifications should be sent when a group has no owner.",
+    "Expected_Value": "90 days\nMail provided ",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.17",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that expired domains are removed from te"N/A"t",
+    "Recommendation": "N/A",
+    "Expected_Value": "There are no domains that are expired ",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "AAD.SC.18",
+    "MS_Service": "Microsoft Entra ID - Security Configuration",
+    "M365_Control": "Ensure that 'Allow users to connect their work or school account with LinkedIn' is set to 'No'",
+    "Recommendation": "Set 'Allow users to connect their work or school account with LinkedIn' to 'No'",
+    "Expected_Value": "N/A",
+    "Comment": "Manual verification required"
+  }
+]

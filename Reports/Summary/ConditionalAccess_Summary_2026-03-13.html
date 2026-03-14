@@ -1,0 +1,107 @@
+<html>
+<head>
+<title>ConditionalAccess Audit Summary</title>
+<style>
+body {
+font-family: Segoe UI, Arial, sans-serif;
+background-color: #f5f5f5;
+color: #222;
+}
+
+h1 {
+color: #333333;
+}
+
+table {
+border-collapse: collapse;
+width: 100%;
+background-color: white;
+}
+
+th {
+background-color: #2f5597;
+color: white;
+padding: 8px;
+text-align: left;
+}
+
+td {
+padding: 6px;
+border-bottom: 1px solid #ddd;
+vertical-align: top;
+}
+
+.status-pass {
+background-color: #c6efce;
+color: #006100;
+font-weight: bold;
+}
+
+.status-warning {
+background-color: #ffeb9c;
+color: #9c6500;
+font-weight: bold;
+}
+
+.status-fail {
+background-color: #ffc7ce;
+color: #9c0006;
+font-weight: bold;
+}
+
+.status-info {
+background-color: #d9e1f2;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-manual {
+background-color: #ddebf7;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-error {
+background-color: #f4cccc;
+color: #7f0000;
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+<h1>ConditionalAccess Security Audit</h1>
+<table>
+<tr>
+<th>Contrl_ID</th>
+<th>Descryption</th>
+<th>Result</th>
+<th>Status</th>
+<th>Expected_Value</th>
+<th>Recommencdation</th>
+<th>Comment</th>
+</tr>
+<tr><td>AAD.CA.01</td><td>Ensure that 'Trusted Locations' are defined</td><td>0 trusted named locations found</td><td class='status-fail'>FAIL</td><td>Trusted Locations are defined as the specific IPs, and checked as trusted.
+Possible need of acquiring the list of specific IP list before
+If there is not a list of IP addresses for trusted locations, possible need of designating specific ones.
+</td><td>Define 'Trusted Locations'</td><td>N/A</td></tr>
+<tr><td>AAD.CA.02</td><td>Ensure that 'Conditional Access' Policies Block Risky Sign-in</td><td>0 enabled Conditional Access policies block risky sign-ins</td><td class='status-fail'>FAIL</td><td>Created conditional access policy with appropriate settings</td><td>Recommend is to migrate 'Identity Protection Policies' to 'Conditional Access' for the following benefits:
+  - Enhanced diagnostic data
+  - Report-only mode integration
+  - Graph API support
+  - Use more 'Conditional Access' attributes like sign-in frequency in the policy</td><td>N/A</td></tr>
+<tr><td>AAD.CA.03</td><td>Ensure that exclusions in 'Conditional Access' policies are managed correctly</td><td>0 Conditional Access policies contain exclusions</td><td class='status-pass'>PASS</td><td>Confirm who should be excluded, and if the mentioned accounts are excluded in the Exclude tab of the Conditional Access Policies</td><td>Ensure that only 'Break Glass Account' is excluded from policies. Every policy should cover all users, applications and device platforms in scope of the policy, or for defined group of users for whom the policy should be applied. Every exclusion from policy should be regularly reviewed, managed (for e.g. define trusted IP address and move to dedicated Conditional Access Policy) and removed if exclusion is no more required.</td><td>N/A</td></tr>
+<tr><td>AAD.CA.04</td><td>Ensure that 'Conditional Access' Policies are enforced for all users in scope</td><td>0 policies have limited or unclear user scope</td><td class='status-pass'>PASS</td><td>All the Conditional Access policies are assigned to the proper groups and users</td><td>Each 'Conditional Access' policy should cover all users in scope of policy. or for defined group of users for whom the policy should be applied.</td><td>N/A</td></tr>
+<tr><td>AAD.CA.05</td><td>Ensure that 'Conditional Access' Policies are in use</td><td>0 enabled Conditional Access policies found</td><td class='status-fail'>FAIL</td><td>Configured conditional access policies</td><td>Consider creating 'Conditional Access' policies or re-enabling Secure Defaults. If the Tent is not licensed for Conditional Access, consider enabling Secure Defaults</td><td>N/A</td></tr>
+<tr><td>AAD.CA.06</td><td>Ensure that 'Conditional Access' Policies do not include or explicitly exclude device platforms</td><td>0 policies explicitly target or exclude device platforms</td><td class='status-pass'>PASS</td><td>There are no device platforms specified in the 'included' or 'excluded' </td><td>Review existing 'Conditional Access' Policies and determine if all device platforms are accounted for. If device platforms are not accounted for, it is recommended to configure or create policies to target the missing platforms.</td><td>N/A</td></tr>
+<tr><td>AAD.CA.07</td><td>Ensure that 'Multifactor authentication' is required for Intune device enrollments</td><td>0 enabled policies require MFA for device registration/enrollment</td><td class='status-fail'>FAIL</td><td>1. Created conditional access policy with 'Grant' set to 'Grant access: Require multifactor authentication'
+2. Yes</td><td>1. Create dedicated 'Conditional Access' that required 'Multifactor Authentication' policy for Intune Device enrollments
+2. Set 'Require Multifactor Authentication to register or join devices with Microsoft Entra' to 'Yes' in Microsoft Entra ID -> Devices -> Device setting</td><td>N/A</td></tr>
+<tr><td>AAD.CA.08</td><td>Ensure that 'Multifactor authentication' is required for security information registration</td><td>0 enabled policies require MFA for security information registration</td><td class='status-fail'>FAIL</td><td>Created conditional access policy with 'Grant' set to 'Grant access: Require multifactor authentication'</td><td>Create dedicated 'Conditional Access' that required 'Multifactor Authentication' policy for Security Information Registration</td><td>N/A</td></tr>
+<tr><td>AAD.CA.09</td><td>Ensure that 'Conditional Access' Policies do not include or explicitly exclude applications</td><td>0 policies include specific applications or exclude applications</td><td class='status-pass'>PASS</td><td>N/A</td><td>Review exceptions for users and applications, if needed, keep exclusions please add trusted locations for associated accounts and applications</td><td>N/A</td></tr>
+<tr><td>AAD.CA.10</td><td>Ensure that technical/service accounts that are exlcuded from existing Conditional Access policies have defined 'Trusted IP Addresses' and the dedicated conditional access for these accounts is created and enabled  </td><td>0 policies exclude users; 0 exclusions have a potential compensating enabled policy</td><td class='status-pass'>PASS</td><td>Created conditional access policy with appropriate settings</td><td>- Add new Trusted Location '[Trusted Location name]' and add [IP from which that account establish connection] IP address as trusted
+- Add account to new Security Group 'MFA Technical Accounts' for technical accounts (both with privileged and non-privileged role assignment)
+- Add account to Conditional Access policy for technical accounts and exclude trusted location '[Trusted Location name]'.
+  or delete exclusion for account in Conditional Access policy '[Policy name]'</td><td>N/A</td></tr>
+</table>
+</body>
+</html>

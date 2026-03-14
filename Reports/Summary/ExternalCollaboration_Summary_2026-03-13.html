@@ -1,0 +1,94 @@
+<html>
+<head>
+<title>ExternalCollaboration Audit Summary</title>
+<style>
+body {
+font-family: Segoe UI, Arial, sans-serif;
+background-color: #f5f5f5;
+color: #222;
+}
+
+h1 {
+color: #333333;
+}
+
+table {
+border-collapse: collapse;
+width: 100%;
+background-color: white;
+}
+
+th {
+background-color: #2f5597;
+color: white;
+padding: 8px;
+text-align: left;
+}
+
+td {
+padding: 6px;
+border-bottom: 1px solid #ddd;
+vertical-align: top;
+}
+
+.status-pass {
+background-color: #c6efce;
+color: #006100;
+font-weight: bold;
+}
+
+.status-warning {
+background-color: #ffeb9c;
+color: #9c6500;
+font-weight: bold;
+}
+
+.status-fail {
+background-color: #ffc7ce;
+color: #9c0006;
+font-weight: bold;
+}
+
+.status-info {
+background-color: #d9e1f2;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-manual {
+background-color: #ddebf7;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-error {
+background-color: #f4cccc;
+color: #7f0000;
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+<h1>ExternalCollaboration Security Audit</h1>
+<table>
+<tr>
+<th>Contrl_ID</th>
+<th>Descryption</th>
+<th>Result</th>
+<th>Status</th>
+<th>Expected_Value</th>
+<th>Recommencdation</th>
+<th>Comment</th>
+</tr>
+<tr><td>AAD.EC.01</td><td>Ensure that external accounts (on tent level) not used in last '30' days are disabled</td><td>0 guest accounts show no sign-in activity in the last 30 days</td><td class='status-pass'>PASS</td><td>CSV or API proof of the said accounts being disabled</td><td>Review all external accounts with a last sign-in date greater than 30 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID Tent. Due to fact that there may be different situations and business needs, the governce of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 30 days)
+
+The recommendation is a part of Control ID: AAD.IM.02</td><td>N/A</td></tr>
+<tr><td>AAD.EC.02</td><td>Ensure that guest accounts (on tent level) not used in last '90' days are disabled</td><td>0 guest accounts show no sign-in activity in the last 90 days</td><td class='status-pass'>PASS</td><td>CSV or API proof of the said accounts being disabled</td><td>Review all guest accounts with a last sign-in date greater than 90 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID. ue to fact that there may be different situations and business needs, the governce of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 90 days).
+
+The recommendation is a part of Control ID: AAD.IM.02</td><td>N/A</td></tr>
+<tr><td>AAD.EC.03</td><td>Ensure the 'Customer Lockbox' feature is 'Enabled'</td><td>Customer Lockbox is not enabled</td><td class='status-fail'>FAIL</td><td>Enabled</td><td>Set 'Customer Lockbox' to 'Enabled'</td><td>N/A</td></tr>
+<tr><td>AAD.EC.04</td><td>Ensure that there are no External partners with delegated administration privileges and global administrator roles without expiration date</td><td>0 delegated admin partner relationships are expired</td><td class='status-pass'>PASS</td><td>There are no partners with 'expired' status on list</td><td>Review list of added partners and remove if contract has been expired
+During adding new Partner as delegated administrator, insert 'Expiration' as a date when contract will expire</td><td>N/A</td></tr>
+</table>
+</body>
+</html>

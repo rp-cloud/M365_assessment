@@ -1,0 +1,114 @@
+<html>
+<head>
+<title>SecurityConfiguration Audit Summary</title>
+<style>
+body {
+font-family: Segoe UI, Arial, sans-serif;
+background-color: #f5f5f5;
+color: #222;
+}
+
+h1 {
+color: #333333;
+}
+
+table {
+border-collapse: collapse;
+width: 100%;
+background-color: white;
+}
+
+th {
+background-color: #2f5597;
+color: white;
+padding: 8px;
+text-align: left;
+}
+
+td {
+padding: 6px;
+border-bottom: 1px solid #ddd;
+vertical-align: top;
+}
+
+.status-pass {
+background-color: #c6efce;
+color: #006100;
+font-weight: bold;
+}
+
+.status-warning {
+background-color: #ffeb9c;
+color: #9c6500;
+font-weight: bold;
+}
+
+.status-fail {
+background-color: #ffc7ce;
+color: #9c0006;
+font-weight: bold;
+}
+
+.status-info {
+background-color: #d9e1f2;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-manual {
+background-color: #ddebf7;
+color: #1f4e79;
+font-weight: bold;
+}
+
+.status-error {
+background-color: #f4cccc;
+color: #7f0000;
+font-weight: bold;
+}
+</style>
+</head>
+<body>
+<h1>SecurityConfiguration Security Audit</h1>
+<table>
+<tr>
+<th>Contrl_ID</th>
+<th>Descryption</th>
+<th>Result</th>
+<th>Status</th>
+<th>Expected_Value</th>
+<th>Recommencdation</th>
+<th>Comment</th>
+</tr>
+<tr><td>AAD.SC.01</td><td>Ensure that 'Restrict non-admin users from creating tents' is set to 'Yes'</td><td>AllowedToCreateTenants = True</td><td class='status-fail'>FAIL</td><td>Yes</td><td>Set 'Restrict non-admin users from creating tents' to 'Yes'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.02</td><td>Ensure that 'Legacy Authentication' is blocked by at least one of following option:
+  - Conditional Access Policy
+  - Enforced 'Security Defaults' on tent
+or: 
+  - Disabled IMAP, SMTP, POP3 protocols in Exchange Online
+  - Blocked Legacy Authentication for Sharepoint and OneDrive</td><td>Legacy authentication is blocked by Conditional Access or Security Defaults</td><td class='status-pass'>PASS</td><td>All Legacy Authentication protocols are blocked or disabled</td><td>1. Create Contitional Access Policy that block all 'Legacy Authentication' protocols
+2. Enable 'Security defaults' on tent level
+3. Disable POP3, IMAP, SMTP for Exchange and Legacy authentication for Sharepoint and OneDrive</td><td>N/A</td></tr>
+<tr><td>AAD.SC.03</td><td>Ensure that 'Users consent for applications' is set to 'Do not allow user consent'</td><td>AllowedToGrantConsent = </td><td class='status-fail'>FAIL</td><td>Do not allow user consent</td><td>Set 'Users consent for applications' to 'Do not allow user consent'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.04</td><td>Ensure that 'Users can register applications' is set to 'No'</td><td>AllowedToCreateApps = True</td><td class='status-fail'>FAIL</td><td>No</td><td>Set 'Users can register applications' is set to 'No'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.05</td><td>Ensure that 'Guest user access' is set to 'Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)'</td><td>Guest user role ID configured: 10dae51f-b6af-4016-8d66-8c2a99b929b3</td><td class='status-manual'>MANUAL</td><td>Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)</td><td>Set 'Guest user access' to 'Guest user access is restricted to properties and memberships of their own directory objects (most restrictive)'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.06</td><td>Ensure that 'Guest invite restrictions' is set to 'Only users assigned to specific admin roles can invite guest users'</td><td>AllowInvitesFrom = everyone</td><td class='status-fail'>FAIL</td><td>Only users assigned to specific admin roles can invite guest users</td><td>Set 'Guest invite restrictions' to 'Only users assigned to specific admin roles can invite guest users'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.07</td><td>Ensure that 'Require write permissions for creating new management groups' is set to 'Yes'</td><td>Manual verification required for management group creation permissions</td><td class='status-manual'>MANUAL</td><td>Yes</td><td>Set 'Require write permissions for creating new management groups' to 'Yes'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.08</td><td>Ensure Security Defaults (only if Conditional Access Policies is disabled)is enabled on Microsoft Entra ID</td><td>Enabled CA policies: 0; Security Defaults enabled: True</td><td class='status-pass'>PASS</td><td>Enabled if no conditional access polcies in place</td><td>Enable Security Defaults on Azure AD if Conditional Access policies are not in use. In other cases is recommended to disable Security Defaults to avoid conflicts</td><td>N/A</td></tr>
+<tr><td>AAD.SC.09</td><td>Ensure that 'Restrict user ability to access groups features in the My Groups' is set to 'Yes'</td><td>Manual verification required for My Groups restrictions</td><td class='status-manual'>MANUAL</td><td>Yes</td><td>Set 'Restrict user ability to access groups features in the My Groups' to 'Yes'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.10</td><td>Ensure that 'Users can create security groups in Azure Portals' is set to 'No'</td><td>AllowedToCreateSecurityGroups = True</td><td class='status-fail'>FAIL</td><td>No</td><td>Set 'Users can create security groups in Azure Portals, API or PowerShell' to 'No'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.11</td><td>Ensure that 'Owners can manage group membership requests in the Access Panel' is set to 'No'</td><td>Manual verification required for owner-managed membership requests</td><td class='status-manual'>MANUAL</td><td>No</td><td>Set 'Owners can manage group membership requests in the Access Panel' to 'No'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.12</td><td>Ensure that 'Users can create Microsoft 365 groups in Azure Portals' is set to 'No'</td><td>AllowedToCreateGroups = ; Group.Unified.EnableGroupCreation = </td><td class='status-fail'>FAIL</td><td>No</td><td>Set 'Users can create Microsoft 365 groups in Azure Portals' to 'No' </td><td>N/A</td></tr>
+<tr><td>AAD.SC.13</td><td>Ensure that 'Restrict access to Microsoft Entra ID administration portal' is set to 'Yes'</td><td>Manual verification required for Entra admin portal restriction</td><td class='status-manual'>MANUAL</td><td>Yes</td><td>Set 'Restrict access to Microsoft Entra ID administration portal' to 'Yes'</td><td>N/A</td></tr>
+<tr><td>AAD.SC.14</td><td>Ensure that 'Sign me out when inactive' is set to '1 hour' for Administrative Access to Portal</td><td>Manual verification required for administrative session timeout</td><td class='status-manual'>MANUAL</td><td>1 hour</td><td>Set 'Sign me out when inactive' is set to '1 hour' for Administrative Access to Portal
+
+The recommendation is a part of Control ID: and AAD.GV.01</td><td>N/A</td></tr>
+<tr><td>AAD.SC.15</td><td>Ensure that 'Company Branding' is configured</td><td>Company branding is not configured</td><td class='status-fail'>FAIL</td><td>Ask the administrator about company branding guidelines
+The Company branding is configured according to the guidelines</td><td>'Company branding' should be configured to to prettify the sign-in experience for end-users</td><td>N/A</td></tr>
+<tr><td>AAD.SC.16</td><td>Ensure that 'Group lifetime (in days)' settings are configured for Groups</td><td>No group lifecycle policy found</td><td class='status-fail'>FAIL</td><td>90 days
+Mail provided </td><td>Set 'Group lifetime (in days)' to '90 (days)' and provide an email address where expiration notifications should be sent when a group has no owner.</td><td>N/A</td></tr>
+<tr><td>AAD.SC.17</td><td>Ensure that expired domains are removed from tent</td><td>0 non-default unverified domains found</td><td class='status-pass'>PASS</td><td>There are no domains that are expired </td><td>N/A</td><td>N/A</td></tr>
+<tr><td>AAD.SC.18</td><td>Ensure that 'Allow users to connect their work or school account with LinkedIn' is set to 'No'</td><td>Manual verification required for LinkedIn integration setting</td><td class='status-manual'>MANUAL</td><td>N/A</td><td>Set 'Allow users to connect their work or school account with LinkedIn' to 'No'</td><td>Manual verification required</td></tr>
+</table>
+</body>
+</html>

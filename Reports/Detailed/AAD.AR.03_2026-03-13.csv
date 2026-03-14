@@ -1,0 +1,4 @@
+"Role","DisplayName","UserPrincipalName","UserType","AccountEnabled"
+"Global Administrator","Rafał Pietraszek","rafal.pietraszek@cloudsecdev.eu","Member","True"
+"Global Administrator","Break Glass account","break.glass@cloudsecdev.eu","Member","True"
+"Global Administrator","Rafał Pietraszek cloud","rafal@cloudsecdev.eu","Member","True"

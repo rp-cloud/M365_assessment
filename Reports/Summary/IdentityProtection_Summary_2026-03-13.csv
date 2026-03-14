@@ -1,0 +1,33 @@
+"Contrl_ID","Descryption","Result","Status","Expected_Value","Recommencdation","Comment"
+"AAD.IP.01","Ensure that 'Multi-factor authentication' is enforced for all global administrators","3 Global Administrators are not MFA-registered","FAIL","MFA enforced for all [number] global administrator accounts","Enforce MFA for all [number] global administrator accounts","N/A"
+"AAD.IP.02","Ensure that 'Alternate contact info' details are completed for 'Multifactor authentication' and Self Service Password Reset process","0 users are not registered for SSPR/recovery information","WARNING","Completed for all users","Complete 'Alternative contact info' details for MFA and Self Service Password Reset process
+
+The recommendation is a part of Control ID: AAD.IP.04","N/A"
+"AAD.IP.03","Ensure that 'Multifactor authentication' is enabled for all users in organization","0 users are not MFA-registered","FAIL","MFA for all users set to 'Enabled'","Enable 'Multifactor authentication' for all users in the organization.
+
+The recommendation is a part of Control ID: AAD.IP.04 and AAD.GV.01","N/A"
+"AAD.IP.04","Ensure password are set to 'Never Expire' or to '365 days'","2 verified domains do not meet the 365 days / never expire requirement","FAIL","Passwords dont expire, the box is unchecked","Set password to 'Never expire' or change password duration to '365' days for regular user's accounts. This setting requires equivalent level of maturity in Identity and Access Management Process. Maturity can be reached by: 
+  - integrating all internal applications exposed to public internet with Single Sign On when your primary Identity Provider will be Microsoft Entra ID
+  - Implementation Multifactor Authentication
+  - Implementing relevant security configuration to end user workstations (cloud PC only, Hybrid Joined, Bring your own device technical measures and protection)
+  - Password entropy level
+  - Blocking simple passwords 
+
+The recommendation is a part of Control ID: M365.GS.06","N/A"
+"AAD.IP.05","Ensure that password complexity from AD meets Microsoft Recommendations","Manual verification required for password complexity policy","MANUAL","Password must meet complexity requirements' is set to 'Enabled'","Ensure that Password Policy meets current standards and recommendations","N/A"
+"AAD.IP.06","Ensure that Microsoft Entra ID Identity Protection 'Sign-in Risk Policies' are 'Enabled'","0 enabled policies handle sign-in risk","FAIL","Enabled","Set 'Sign-in risk policy' to 'Enabled'","N/A"
+"AAD.IP.07","Ensure that Azure AD Identity Protection 'User Risk Policies' are 'Enabled'","0 enabled policies handle user risk","FAIL","Enabled","Set 'User risk policy' to 'Enabled'","N/A"
+"AAD.IP.08","Ensure that 'Account lock threshold' is set to '10'","Current lockout threshold: ","FAIL","Account lock threeshold is set to 10","Set 'Account lock threeshold' to '10'","N/A"
+"AAD.IP.09","Ensure 'Self-service password reset' is 'Enabled' for all users in organization","0 users are not registered for self-service password reset","FAIL","Self service password reset enabled for all users or licensed only","Enable 'Self-service password reset' for all users. 
+
+The recommendation is a part of Control ID: AAD.IP.02","N/A"
+"AAD.IP.10","Ensure that 'Account lockout duration' is higher than '1800'","Current lockout duration:  seconds","FAIL","3600 or higher","Set 'Account lockout duration' to '920' or higher. 
+
+The recommendation is a part of Control ID: AAD.IP.04","N/A"
+"AAD.IP.11","Ensure that 'Custom banned password list' is configured","1 custom banned passwords configured","PASS","Enforce custon list is set to yes, and the strings of predicted dangerous passwords are added to the list.","Configure and enable 'Custom banned password' list to block simple and common passwords. 
+
+The recommendation is a part of Control ID: AAD.IP.04","N/A"
+"AAD.IP.12","Ensure that Phishing-resistant multifactor authentication is enforced for administrators","No phishing-resistant MFA policy evidence found for privileged users","FAIL","Conditional Access Policy deployed with enforced Phishing resistant MFA for all administrator accounts or users in scope of policy","Setup strong multifactor authentication for all administrator accounts with following MFA combination of authenticaiton:
+  - Require Windows Hello for Business or,
+  - Require FIDO2 Security Key or,
+  - Certificate Based Authentication","N/A"
