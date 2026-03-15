@@ -221,7 +221,7 @@
     "M365_Control": "Ensure the lifecycle of identities and entitlements is managed",
     "Recommendation": "Establish well-defined process of Identity Governance process to manage identity and access lifecycle at scale. ",
     "Expected_Value": "N/A",
-    "Comment": "Manual verification required"
+    "Comment": "Review process should be established for this control"
   },
   {
     "Control_ID": "AAD.IM.03",
@@ -357,7 +357,7 @@
     "M365_Control": "Ensure that 'Break Glass Account' is 'Cloud-only'",
     "Recommendation": "Ensure 'Break Glass Account' are created and configured to be 'Cloud-only' with permanently assigned 'Global Administrator' role and excluded from all 'Conditional Access' policies. Password for the account should be stored in secure vault and activity of the account should be monitored for its usage. Access to the Break Glass Account should be allowed only from selected and trusted locations (e.g. Main Office)",
     "Expected_Value": "Break Glass Account is Cloud only",
-    "Comment": "N/A"
+    "Comment": "Potential Break Glass accounts are identified heuristically and should be manually verified"
   },
   {
     "Control_ID": "AAD.PA.03",
@@ -552,6 +552,8 @@
     "Comment": "Manual verification required"
   }
 ]
+
+
 
 
 
