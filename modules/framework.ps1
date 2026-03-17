@@ -34,6 +34,7 @@ function New-AppContext {
                 Join-Path $entraCategoriesPath 'security-configuration.ps1'
             )
         }
+        '11' = [PSCustomObject]@{ Label = 'CA Diagnostics'; Path = Join-Path $entraCategoriesPath 'conditional-access-diagnostics.ps1' }
     }
 
     $exchangeCategoryMap = [ordered]@{
@@ -95,3 +96,4 @@ function Invoke-ScriptList {
         . $path
     }
 }
+

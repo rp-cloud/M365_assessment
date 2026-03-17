@@ -1,36 +1,62 @@
 ############################################################
-# Reporting module for EntraID Audit
+# Reporting module for Microsoft 365 Audit
 ############################################################
 
 $script:AuditBasePath = Split-Path -Parent $PSScriptRoot
 $script:DetailedReportPath = Join-Path $script:AuditBasePath "Reports\Detailed"
 $script:SummaryReportPath = Join-Path $script:AuditBasePath "Reports\Summary"
-$script:ControlCatalogPath = Join-Path $script:AuditBasePath "categories\EntraID\m365_entraID.json"
+$script:DefaultControlCatalogPath = Join-Path $script:AuditBasePath "categories\EntraID\m365_entraID.json"
 
-if (-not $Global:ControlCatalog) {
-    $Global:ControlCatalog = @{}
+if (-not $Global:ControlCatalogStore) {
+    $Global:ControlCatalogStore = @{}
+}
+
+if (-not $Global:ActiveControlCatalogPath) {
+    $Global:ActiveControlCatalogPath = $script:DefaultControlCatalogPath
+}
+
+function Set-ControlCatalogPath {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $resolvedPath = (Resolve-Path $Path).Path
+    $Global:ActiveControlCatalogPath = $resolvedPath
+}
+
+function Get-ControlCatalogPath {
+    if (-not $Global:ActiveControlCatalogPath) {
+        $Global:ActiveControlCatalogPath = $script:DefaultControlCatalogPath
+    }
+
+    return $Global:ActiveControlCatalogPath
 }
 
 function Initialize-ControlCatalog {
-    if ($Global:ControlCatalog.Count -gt 0) {
+    $catalogPath = Get-ControlCatalogPath
+
+    if ($Global:ControlCatalogStore.ContainsKey($catalogPath)) {
         return
     }
 
-    if (-not (Test-Path $script:ControlCatalogPath)) {
-        throw "Control catalog not found: $script:ControlCatalogPath"
+    if (-not (Test-Path $catalogPath)) {
+        throw "Control catalog not found: $catalogPath"
     }
 
-    $RawCatalog = Get-Content -Raw $script:ControlCatalogPath
+    $rawCatalog = Get-Content -Raw $catalogPath
 
-    # The source file contains a few broken strings like te"N/A"t/gouver"N/A"ce.
+    # The source file may contain a few broken strings like te"N/A"t/gover"N/A"ce.
     # Repair only the invalid quoted fragment inside words and keep standalone "N/A" values untouched.
-    $SanitizedCatalog = [regex]::Replace($RawCatalog, '(?<=[A-Za-z])"N/A"(?=[A-Za-z])', 'n')
+    $sanitizedCatalog = [regex]::Replace($rawCatalog, '(?<=[A-Za-z])"N/A"(?=[A-Za-z])', 'n')
+    $definitions = $sanitizedCatalog | ConvertFrom-Json
+    $catalog = @{}
 
-    $Definitions = $SanitizedCatalog | ConvertFrom-Json
-
-    foreach ($Definition in $Definitions) {
-        $Global:ControlCatalog[$Definition.Control_ID] = $Definition
+    foreach ($definition in $definitions) {
+        $catalog[$definition.Control_ID] = $definition
     }
+
+    $Global:ControlCatalogStore[$catalogPath] = $catalog
 }
 
 function Get-ControlDefinition {
@@ -41,11 +67,14 @@ function Get-ControlDefinition {
 
     Initialize-ControlCatalog
 
-    if (-not $Global:ControlCatalog.ContainsKey($ControlID)) {
-        throw "Control definition not found for $ControlID"
+    $catalogPath = Get-ControlCatalogPath
+    $catalog = $Global:ControlCatalogStore[$catalogPath]
+
+    if (-not $catalog.ContainsKey($ControlID)) {
+        throw "Control definition not found for $ControlID in $catalogPath"
     }
 
-    return $Global:ControlCatalog[$ControlID]
+    return $catalog[$ControlID]
 }
 
 function Add-SummaryEntry {
@@ -59,16 +88,16 @@ function Add-SummaryEntry {
         [string]$Status
     )
 
-    $Definition = Get-ControlDefinition -ControlID $ControlID
+    $definition = Get-ControlDefinition -ControlID $ControlID
 
     $Global:AuditSummary += [PSCustomObject]@{
-        Contrl_ID       = $Definition.Control_ID
-        Descryption     = $Definition.M365_Control
+        Contrl_ID       = $definition.Control_ID
+        Descryption     = $definition.M365_Control
         Result          = $Result
         Status          = $Status
-        Expected_Value  = $Definition.Expected_Value
-        Recommencdation = $Definition.Recommendation
-        Comment         = $Definition.Comment
+        Expected_Value  = $definition.Expected_Value
+        Recommencdation = $definition.Recommendation
+        Comment         = $definition.Comment
     }
 }
 
@@ -79,8 +108,8 @@ function Export-ControlDetails {
         [object]$Data
     )
 
-    $Date = Get-Date -Format "yyyy-MM-dd"
-    $Path = Join-Path $script:DetailedReportPath "$ControlID`_$Date.csv"
+    $date = Get-Date -Format "yyyy-MM-dd"
+    $path = Join-Path $script:DetailedReportPath "$ControlID`_$date.csv"
 
     if ($null -eq $Data -or ($Data | Measure-Object).Count -eq 0) {
         $Data = [PSCustomObject]@{
@@ -88,7 +117,7 @@ function Export-ControlDetails {
         }
     }
 
-    $Data | Export-Csv $Path -NoTypeInformation -Encoding UTF8
+    $Data | Export-Csv $path -NoTypeInformation -Encoding UTF8
 }
 
 function Export-SummaryReport {
@@ -97,14 +126,14 @@ function Export-SummaryReport {
         [string]$CategoryName
     )
 
-    $Date = Get-Date -Format "yyyy-MM-dd"
+    $date = Get-Date -Format "yyyy-MM-dd"
 
-    $CSVPath = Join-Path $script:SummaryReportPath "$CategoryName`_Summary_$Date.csv"
-    $HTMLPath = Join-Path $script:SummaryReportPath "$CategoryName`_Summary_$Date.html"
+    $csvPath = Join-Path $script:SummaryReportPath "$CategoryName`_Summary_$date.csv"
+    $htmlPath = Join-Path $script:SummaryReportPath "$CategoryName`_Summary_$date.html"
 
-    $Global:AuditSummary | Export-Csv $CSVPath -NoTypeInformation -Encoding UTF8
+    $Global:AuditSummary | Export-Csv $csvPath -NoTypeInformation -Encoding UTF8
 
-    $Style = @"
+    $style = @"
 <style>
 body {
 font-family: Segoe UI, Arial, sans-serif;
@@ -191,24 +220,24 @@ font-weight: bold;
 </style>
 "@
 
-    $Rows = foreach ($Entry in $Global:AuditSummary) {
-        switch ($Entry.Status) {
-            "PASS" { $Class = "status-pass" }
-            "WARNING" { $Class = "status-warning" }
-            "FAIL" { $Class = "status-fail" }
-            "INFO" { $Class = "status-info" }
-            "MANUAL" { $Class = "status-manual" }
-            "ERROR" { $Class = "status-error" }
-            "NO_ACCESS" { $Class = "status-no-access" }
-            "LICENSE_REQUIRED" { $Class = "status-license-required" }
-            "NOT_SUPPORTED" { $Class = "status-not-supported" }
-            default { $Class = "" }
+    $rows = foreach ($entry in $Global:AuditSummary) {
+        switch ($entry.Status) {
+            "PASS" { $class = "status-pass" }
+            "WARNING" { $class = "status-warning" }
+            "FAIL" { $class = "status-fail" }
+            "INFO" { $class = "status-info" }
+            "MANUAL" { $class = "status-manual" }
+            "ERROR" { $class = "status-error" }
+            "NO_ACCESS" { $class = "status-no-access" }
+            "LICENSE_REQUIRED" { $class = "status-license-required" }
+            "NOT_SUPPORTED" { $class = "status-not-supported" }
+            default { $class = "" }
         }
 
-        "<tr><td>$($Entry.Contrl_ID)</td><td>$($Entry.Descryption)</td><td>$($Entry.Result)</td><td class='$Class'>$($Entry.Status)</td><td>$($Entry.Expected_Value)</td><td>$($Entry.Recommencdation)</td><td>$($Entry.Comment)</td></tr>"
+        "<tr><td>$($entry.Contrl_ID)</td><td>$($entry.Descryption)</td><td>$($entry.Result)</td><td class='$class'>$($entry.Status)</td><td>$($entry.Expected_Value)</td><td>$($entry.Recommencdation)</td><td>$($entry.Comment)</td></tr>"
     }
 
-    $Table = @"
+    $table = @"
 <table>
 <tr>
 <th>Contrl_ID</th>
@@ -219,28 +248,28 @@ font-weight: bold;
 <th>Recommencdation</th>
 <th>Comment</th>
 </tr>
-$($Rows -join "`n")
+$($rows -join "`n")
 </table>
 "@
 
-    $HTML = @"
+    $html = @"
 <html>
 <head>
 <title>$CategoryName Audit Summary</title>
-$Style
+$style
 </head>
 <body>
 <h1>$CategoryName Security Audit</h1>
-$Table
+$table
 </body>
 </html>
 "@
 
-    $HTML | Out-File $HTMLPath -Encoding UTF8
+    $html | Out-File $htmlPath -Encoding UTF8
 
     Write-Host "Summary saved:"
-    Write-Host $CSVPath
-    Write-Host $HTMLPath
+    Write-Host $csvPath
+    Write-Host $htmlPath
 }
 
 function Export-ControlResult {
@@ -258,4 +287,3 @@ function Export-ControlResult {
     Export-ControlDetails -ControlID $ControlID -Data $Data
     Add-SummaryEntry -ControlID $ControlID -Result $Result -Status $Status
 }
-

@@ -67,12 +67,12 @@ function Get-CachedCAPolicies {
     return Get-CacheItem -Key "CAPolicies" -Loader {
         Write-Host "Loading Conditional Access policies..."
         try {
-            $result = @(Get-MgIdentityConditionalAccessPolicy)
-            Set-AuditAvailabilityState -Key "CAPolicies" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgIdentityConditionalAccessPolicy"
+            $result = @(Get-MgIdentityConditionalAccessPolicy -All -ErrorAction Stop)
+            Set-AuditAvailabilityState -Key "CAPolicies" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgIdentityConditionalAccessPolicy -All"
             $result
         }
         catch {
-            Set-AuditAvailabilityState -Key "CAPolicies" -Status $(if ($status = Resolve-AuditUnavailableStatus -ErrorRecord $_) { $status } else { "ERROR" }) -Reason "Conditional Access policies could not be retrieved" -Source "Get-MgIdentityConditionalAccessPolicy" -ErrorRecord $_
+            Set-AuditAvailabilityState -Key "CAPolicies" -Status $(if ($status = Resolve-AuditUnavailableStatus -ErrorRecord $_) { $status } else { "ERROR" }) -Reason "Conditional Access policies could not be retrieved" -Source "Get-MgIdentityConditionalAccessPolicy -All" -ErrorRecord $_
             @()
         }
     }
@@ -82,7 +82,7 @@ function Get-CachedLocations {
     return Get-CacheItem -Key "Locations" -Loader {
         Write-Host "Loading Named Locations..."
         try {
-            $Locations = @(Get-MgIdentityConditionalAccessNamedLocation -All)
+            $Locations = @(Get-MgIdentityConditionalAccessNamedLocation -All -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "Locations" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgIdentityConditionalAccessNamedLocation -All"
 
             @(

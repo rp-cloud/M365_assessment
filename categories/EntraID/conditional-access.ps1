@@ -205,11 +205,14 @@ $RegistrationPolicies = @(
     $Policies |
     Where-Object {
         $_.State -eq "enabled" -and
-        $_.Conditions.UserActions -contains "registerSecurityInformation" -and
+        (
+            @($_.Conditions.Applications.IncludeUserActions) -contains "urn:user:registersecurityinfo" -or
+            @($_.Conditions.Applications.IncludeUserActions) -contains "registerSecurityInformation"
+        ) -and
         $_.GrantControls.BuiltInControls -contains "mfa"
     } |
     Select-Object DisplayName, State,
-        @{Name = "UserActions"; Expression = { $_.Conditions.UserActions -join "," } },
+        @{Name = "UserActions"; Expression = { $_.Conditions.Applications.IncludeUserActions -join "," } },
         @{Name = "GrantControls"; Expression = { $_.GrantControls.BuiltInControls -join "," } }
 )
 
@@ -312,3 +315,4 @@ else {
 Export-SummaryReport "ConditionalAccess"
 
 Write-Host "Conditional Access audit completed."
+

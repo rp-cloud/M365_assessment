@@ -122,7 +122,7 @@ function Get-AuditFirstUnavailableState {
     foreach ($key in $Keys) {
         $state = Get-AuditAvailabilityState -Key $key
 
-        if ($state -and (Test-AuditUnavailableStatus -Status $state.Status)) {
+        if ($state -and $state.Status -and $state.Status -ne "AVAILABLE") {
             return $state
         }
     }
@@ -180,9 +180,26 @@ function Export-ControlUnavailableFromState {
         [object]$AvailabilityState
     )
 
-    Export-ControlUnavailable `
-        -ControlID $ControlID `
-        -Status $AvailabilityState.Status `
-        -Reason $AvailabilityState.Reason `
-        -Source $AvailabilityState.Source
+    if (Test-AuditUnavailableStatus -Status $AvailabilityState.Status) {
+        Export-ControlUnavailable `
+            -ControlID $ControlID `
+            -Status $AvailabilityState.Status `
+            -Reason $AvailabilityState.Reason `
+            -Source $AvailabilityState.Source
+        return
+    }
+
+    $details = [PSCustomObject]@{
+        Status  = $AvailabilityState.Status
+        Reason  = $AvailabilityState.Reason
+        Source  = $AvailabilityState.Source
+        Message = $AvailabilityState.Message
+    }
+
+    $result = $AvailabilityState.Reason
+    if ($AvailabilityState.Message) {
+        $result = "$result Message: $($AvailabilityState.Message)"
+    }
+
+    Export-ControlResult -ControlID $ControlID -Data $details -Result $result -Status "ERROR"
 }

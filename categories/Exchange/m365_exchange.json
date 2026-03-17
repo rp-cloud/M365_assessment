@@ -1,0 +1,130 @@
+[
+  {
+    "Control_ID": "EXCH.AR.01",
+    "MS_Service": "Exchange Online - Alerting and Reporting",
+    "M365_Control": "Ensure the account provisioning activity report is reviewed weekly",
+    "Recommendation": "Establish regular process of review 'Provisioning activity' report. Reviewing this report on a regular basis allows for identification and remediation of compromised accounts",
+    "Expected_Value": "Ask the administrator if they have documentation of weekly reviews",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.AR.02",
+    "MS_Service": "Exchange Online - Alerting and Reporting",
+    "M365_Control": "Ensure mailbox forwarding rules are reviewed weekly",
+    "Recommendation": "Establish regular process of review 'Malbox forwarding rules' report . Reviewing this report on a regular basis allows for identification and remediation of compromised accounts",
+    "Expected_Value": "Ask the administrator if they have documentation of weekly reviews",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.01",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure users installing Outlook add-ins is not allowed",
+    "Recommendation": "N/A",
+    "Expected_Value": "'Other Roles: Mys Custom Apps, My Marketplace App, My ReadWriteMailbox App' is not selected",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.02",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that Modern Authentication for Exchange Online is Enabled",
+    "Recommendation": "Set 'Turn on modern authentication for Outlook 2013 for Windows and later' to 'Enabled (box checked)'",
+    "Expected_Value": "Enabled (box checked)",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.03",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that user's mailbox delegation (FullAccess) is controlled and not allowed by default",
+    "Recommendation": "Establish internal process for user's mailbox delegation",
+    "Expected_Value": "No allowed mailbox delegation\nAll mailboxes with 'FullAccess' permissions are reviewed and approved",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.04",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure external storage providers available in Outlook on the Web are restricted",
+    "Recommendation": "Disable external storage providers available in Outlook on the Web",
+    "Expected_Value": "0",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.05",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that 'Offline Access' of Outlook mailbox is set to 'Never'",
+    "Recommendation": "Set 'Offline Access' of Outlook mailbox to 'Never'",
+    "Expected_Value": "Never",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.06",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that 'Exchange ActiveSync' is blocked",
+    "Recommendation": "Create Conditional access policy that block 'Exchange ActiveSync clients' and set 'Exchange ActiveSync access settings' to 'Block access' or 'Quarantine - let me decide to block or allow later'",
+    "Expected_Value": "1. Created Conditional Access Policy and deployed for all users\n2. Enabled  'Security Defaults'\n3. Disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.07",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure Outlook is the only application allowed to use on desktop computers and Microsoft Outlook mobile app is the only application allowed to use on mobile devices (unless other app is authorized)",
+    "Recommendation": "Block all mail applications except od Outlook on desktop computers",
+    "Expected_Value": "1. For Intune: App Protection Policy including Outlook exists\n2. Azure AD: A Conditional Access Policy for blocking method is included",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.08",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure mailbox auditing for all users is Enabled",
+    "Recommendation": "Enable mailbox auditing for all users",
+    "Expected_Value": "Enabled for all users",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.09",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that 'Let your users share their calendars with people outside of your organization who have Office 365 or Exchane' is set to 'Disabled'",
+    "Recommendation": "Set 'Let your users share their calendars with people outside of your organization who have Office 365 or Exchange' to 'Disabled'",
+    "Expected_Value": "Disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.10",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure legacy authentication protocol 'IMAP' is set to 'Disabled'",
+    "Recommendation": "Disable legacy authentication protocol 'IMAP'",
+    "Expected_Value": "1. Created Conditional Access Policy and deployed for all users\n2. Enabled  'Security Defaults'\n3. Disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.12",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure legacy authentication protocol 'POP3' is set to 'Disabled'",
+    "Recommendation": "Disable legacy authentication protocol 'POP3'",
+    "Expected_Value": "1. Created Conditional Access Policy and deployed for all users\n2. Enabled  'Security Defaults'\n3. Disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.13",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that 'SendOnBehalfOf' Delegates permissons to user's mailboxes are reviewed and approved",
+    "Recommendation": "Review and approve SendOnBehalfOf Delegates permissons to user's mailboxes",
+    "Expected_Value": "Ask the administrator about the criteria used for the 'SendOnBehalfOf' permissions approval\nThe SendOnBehalfOf premissions are approved according to the companys criteria and microsoft guideline",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.14",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure legacy authentication protocol 'Authenticated SMTP' is set to 'Disabled'",
+    "Recommendation": "Disable legacy authentication protocol 'SMTP'",
+    "Expected_Value": "1. Created Conditional Access Policy and deployed for all users\n2. Enabled  'Security Defaults'\n3. Disabled",
+    "Comment": "N/A"
+  },
+  {
+    "Control_ID": "EXCH.ON.15",
+    "MS_Service": "Exchange Online",
+    "M365_Control": "Ensure that 'SendAs' Delegates permissons to user's mailboxes are reviewed and approved",
+    "Recommendation": "Review and approve SendAs delegates permissons to user's mailboxes",
+    "Expected_Value": "Ask the administrator about the criteria used for the 'SendAs' permissions approval\nThe SendAspremissions are approved according to the companys criteria and microsoft guideline",
+    "Comment": "N/A"
+  }
+]
