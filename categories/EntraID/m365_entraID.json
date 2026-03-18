@@ -253,7 +253,7 @@
     "M365_Control": "Ensure that 'Multi-factor authentication' is enforced for all global administrators",
     "Recommendation": "Enforce MFA for all [number] global administrator accounts",
     "Expected_Value": "MFA enforced for all [number] global administrator accounts",
-    "Comment": "N/A"
+    "Comment": "Detected Global Administrator account may also be a Break Glass account and should be manually verified"
   },
   {
     "Control_ID": "AAD.IP.02",
@@ -357,7 +357,7 @@
     "M365_Control": "Ensure that 'Break Glass Account' is 'Cloud-only'",
     "Recommendation": "Ensure 'Break Glass Account' are created and configured to be 'Cloud-only' with permanently assigned 'Global Administrator' role and excluded from all 'Conditional Access' policies. Password for the account should be stored in secure vault and activity of the account should be monitored for its usage. Access to the Break Glass Account should be allowed only from selected and trusted locations (e.g. Main Office)",
     "Expected_Value": "Break Glass Account is Cloud only",
-    "Comment": "Potential Break Glass accounts are identified heuristically and should be manually verified"
+    "Comment": "Potential Break Glass accounts are identified heuristically from active role membership and should be manually verified. Eligible PIM assignments are not included in this detection"
   },
   {
     "Control_ID": "AAD.PA.03",
@@ -373,7 +373,7 @@
     "M365_Control": "Ensure that no non-IT administrators are assigned as a Device Administrators",
     "Recommendation": "Review list of users that has been added as Device Administrators and remove unnecessary priviledges ",
     "Expected_Value": "None of the non-IT admins are assigned as Device Administrators",
-    "Comment": "N/A"
+    "Comment": "Detected assignments should be additionally reviewed manually to confirm business justification"
   },
   {
     "Control_ID": "AAD.PA.05",
@@ -552,6 +552,8 @@
     "Comment": "Manual verification required"
   }
 ]
+
+
 
 
 

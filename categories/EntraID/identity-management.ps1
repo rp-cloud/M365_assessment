@@ -10,12 +10,12 @@ $TotalControls = 5
 $CurrentControl = 0
 
 $Users = Get-CachedUsers
-$SignIns30 = Get-CachedSignIns -Days 30
+$SignIns30 = Get-CachedSignIns -Days 30 -Top 40000
 $AccessReviews = @(Get-CachedAccessReviewDefinitions)
 $AuthorizationPolicy = Get-CachedAuthorizationPolicy
 $AccessReviewAvailability = Get-AuditFirstUnavailableState -Keys @("AccessReviewDefinitions")
 $UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
-$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_30")
+$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_30_Top40000")
 $AuthPolicyAvailability = Get-AuditFirstUnavailableState -Keys @("AuthorizationPolicy")
 
 $ActiveUsers30 = @($SignIns30 | Where-Object { $_.UserPrincipalName } | Select-Object -ExpandProperty UserPrincipalName -Unique)
@@ -87,7 +87,7 @@ else {
         )
     }
 
-    Export-ControlResult -ControlID "AAD.IM.03" -Data $ManualAccessReviewData -Result $(if ($AccessReviewData.Count -gt 0) { "$($AccessReviewData.Count) access review definitions found" } else { "No access review definitions found; manual verification required" }) -Status $(if ($AccessReviewData.Count -gt 0) { "WARNING" } else { "MANUAL" })
+    Export-ControlResult -ControlID "AAD.IM.03" -Data $ManualAccessReviewData -Result "Manual verification required for periodic access review process" -Status "MANUAL"
 }
 
 ############################################################
@@ -110,7 +110,17 @@ else {
         Select-Object DisplayName, Id, Status, CreatedDateTime
     )
 
-    Export-ControlResult -ControlID "AAD.IM.04" -Data $GroupReviews -Result "$($GroupReviews.Count) access review definitions found for Teams/Microsoft 365 groups" -Status $(if ($GroupReviews.Count -gt 0) { "PASS" } else { "FAIL" })
+    $ManualGroupReviewData = if ($GroupReviews.Count -gt 0) { $GroupReviews } else {
+        @(
+            [PSCustomObject]@{
+                Verification = "Manual"
+                Scope        = "Teams and Microsoft 365 Groups access reviews"
+                Evidence     = "Verify recurring access review process for Teams and Microsoft 365 Groups"
+            }
+        )
+    }
+
+    Export-ControlResult -ControlID "AAD.IM.04" -Data $ManualGroupReviewData -Result "Manual verification required for Teams and Microsoft 365 Groups access review process" -Status "MANUAL"
 }
 
 ############################################################
@@ -137,6 +147,7 @@ else {
 Export-SummaryReport "IdentityManagement"
 
 Write-Host "Identity Management audit completed."
+
 
 
 

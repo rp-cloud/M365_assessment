@@ -93,12 +93,25 @@ else {
 ############################################################
 
 $CurrentControl++
-$SC05Data = @([PSCustomObject]@{ GuestUserRoleId = $AuthPolicy.GuestUserRoleId; ExpectedRole = "Guest User" })
+$GuestRoleName = "Unknown"
+if ($AuthPolicy -and $AuthPolicy.GuestUserRoleId) {
+    try {
+        $GuestRoleTemplate = @(Get-MgDirectoryRoleTemplate -ErrorAction Stop | Where-Object { $_.Id -eq $AuthPolicy.GuestUserRoleId } | Select-Object -First 1)
+        if ($GuestRoleTemplate) {
+            $GuestRoleName = $GuestRoleTemplate.DisplayName
+        }
+    }
+    catch {
+        $GuestRoleName = "Unknown"
+    }
+}
+
+$SC05Data = @([PSCustomObject]@{ GuestUserRoleId = $AuthPolicy.GuestUserRoleId; GuestRoleName = $GuestRoleName; ExpectedRole = "Guest User" })
 if ($AuthPolicyAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.SC.05" -AvailabilityState $AuthPolicyAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.SC.05" -Data $SC05Data -Result "Guest user role ID configured: $($AuthPolicy.GuestUserRoleId)" -Status "MANUAL"
+    Export-ControlResult -ControlID "AAD.SC.05" -Data $SC05Data -Result "Guest user access role configured: $GuestRoleName" -Status "MANUAL"
 }
 
 ############################################################
@@ -303,3 +316,4 @@ Export-ControlResult -ControlID "AAD.SC.18" -Data $SC18Data -Result "Manual veri
 Export-SummaryReport "SecurityConfiguration"
 
 Write-Host "Security Configuration audit completed."
+

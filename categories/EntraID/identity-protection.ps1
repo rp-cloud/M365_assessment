@@ -181,19 +181,19 @@ else {
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.IP.08 Lockout threshold"
 
-$LockoutThresholdData = @(
-    [PSCustomObject]@{
-        LockoutThreshold       = $PasswordProtection.lockoutThreshold
-        LockoutDurationSeconds = $PasswordProtection.lockoutDurationInSeconds
-        ObservationWindow      = $PasswordProtection.observationWindowInSeconds
-    }
-)
-
-$ThresholdCompliant = $null -ne $PasswordProtection -and $PasswordProtection.lockoutThreshold -eq 10
-if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
-    Export-ControlUnavailable -ControlID "AAD.IP.08" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+if ($PasswordProtectionAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.08" -AvailabilityState $PasswordProtectionAvailability
 }
 else {
+    $LockoutThresholdData = @(
+        [PSCustomObject]@{
+            LockoutThreshold       = $PasswordProtection.lockoutThreshold
+            LockoutDurationSeconds = $PasswordProtection.lockoutDurationInSeconds
+            ObservationWindow      = $PasswordProtection.observationWindowInSeconds
+        }
+    )
+
+    $ThresholdCompliant = $null -ne $PasswordProtection -and $null -ne $PasswordProtection.lockoutThreshold -and $PasswordProtection.lockoutThreshold -eq 10
     Export-ControlResult -ControlID "AAD.IP.08" -Data $LockoutThresholdData -Result "Current lockout threshold: $($PasswordProtection.lockoutThreshold)" -Status $(if ($ThresholdCompliant) { "PASS" } else { "FAIL" })
 }
 
@@ -230,11 +230,11 @@ $LockoutDurationData = @(
     }
 )
 
-$DurationCompliant = $null -ne $PasswordProtection -and $PasswordProtection.lockoutDurationInSeconds -ge 1800
-if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
-    Export-ControlUnavailable -ControlID "AAD.IP.10" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+if ($PasswordProtectionAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.10" -AvailabilityState $PasswordProtectionAvailability
 }
 else {
+    $DurationCompliant = $null -ne $PasswordProtection -and $null -ne $PasswordProtection.lockoutDurationInSeconds -and $PasswordProtection.lockoutDurationInSeconds -ge 1800
     Export-ControlResult -ControlID "AAD.IP.10" -Data $LockoutDurationData -Result "Current lockout duration: $($PasswordProtection.lockoutDurationInSeconds) seconds" -Status $(if ($DurationCompliant) { "PASS" } else { "FAIL" })
 }
 
@@ -254,8 +254,8 @@ $BannedPasswordData = @(
     }
 )
 
-if ($PasswordProtectionAvailability -and (Test-AuditUnavailableStatus -Status $PasswordProtectionAvailability.Status)) {
-    Export-ControlUnavailable -ControlID "AAD.IP.11" -Status $PasswordProtectionAvailability.Status -Reason $PasswordProtectionAvailability.Reason -Source $PasswordProtectionAvailability.Source
+if ($PasswordProtectionAvailability) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.11" -AvailabilityState $PasswordProtectionAvailability
 }
 else {
     Export-ControlResult -ControlID "AAD.IP.11" -Data $BannedPasswordData -Result "$($CustomBannedPasswords.Count) custom banned passwords configured" -Status $(if ($CustomBannedPasswords.Count -gt 0) { "PASS" } else { "FAIL" })
@@ -268,45 +268,75 @@ else {
 $CurrentControl++
 Write-Host "[$CurrentControl/$TotalControls] AAD.IP.12 Phishing-resistant MFA"
 
-$AdminRoles = @($Roles | Where-Object { $_.DisplayName -match "Administrator|Admin" })
-$PrivilegedAccounts = @()
-foreach ($Role in $AdminRoles) {
-    foreach ($Member in $RoleMembers[$Role.Id]) {
-        $User = $UsersById[$Member.Id]
-        if ($User) {
-            $PrivilegedAccounts += [PSCustomObject]@{
-                Role              = $Role.DisplayName
-                DisplayName       = $User.DisplayName
-                UserPrincipalName = $User.UserPrincipalName
+$AdminsWithoutPhishingResistantMFA = @()
+$IP12UnavailableState = $null
+
+try {
+    $AdminRoles = @($Roles | Where-Object { $_.DisplayName -match "Administrator|Admin" })
+
+    foreach ($Role in $AdminRoles) {
+        foreach ($Member in $RoleMembers[$Role.Id]) {
+            $User = $UsersById[$Member.Id]
+            if (-not $User) {
+                continue
+            }
+
+            $Methods = @(Get-MgUserAuthenticationMethod -UserId $User.Id -ErrorAction Stop)
+            $HasPhishingResistant = $false
+
+            foreach ($Method in $Methods) {
+                if ($Method.AdditionalProperties.'@odata.type' -in @(
+                    "#microsoft.graph.fido2AuthenticationMethod",
+                    "#microsoft.graph.windowsHelloForBusinessAuthenticationMethod",
+                    "#microsoft.graph.x509CertificateAuthenticationMethod"
+                )) {
+                    $HasPhishingResistant = $true
+                }
+            }
+
+            if (-not $HasPhishingResistant) {
+                $AdminsWithoutPhishingResistantMFA += [PSCustomObject]@{
+                    UserPrincipalName = $User.UserPrincipalName
+                    DisplayName       = $User.DisplayName
+                    Role              = $Role.DisplayName
+                }
             }
         }
     }
 }
-
-$PrivilegedAccounts = @($PrivilegedAccounts | Sort-Object UserPrincipalName, Role -Unique)
-$PhishingResistantPolicy = @(
-    $CAPolicies |
-    Where-Object {
-        $_.State -eq "enabled" -and
-        $_.GrantControls.AuthenticationStrength.Id
-    } |
-    Select-Object DisplayName, State,
-        @{Name = "AuthenticationStrengthId"; Expression = { $_.GrantControls.AuthenticationStrength.Id } }
-)
-
-if ($CAAvailability) {
-    Export-ControlUnavailableFromState -ControlID "AAD.IP.12" -AvailabilityState $CAAvailability
+catch {
+    $UnavailableStatus = Resolve-AuditUnavailableStatus -ErrorRecord $_
+    if ($UnavailableStatus) {
+        $IP12UnavailableState = [PSCustomObject]@{
+            Status = $UnavailableStatus
+            Reason = "Authentication methods for privileged users could not be retrieved"
+            Source = "Get-MgUserAuthenticationMethod"
+        }
+    }
+    else {
+        $IP12UnavailableState = [PSCustomObject]@{
+            Status  = "ERROR"
+            Reason  = "Authentication methods for privileged users could not be retrieved"
+            Source  = "Get-MgUserAuthenticationMethod"
+            Message = $_.Exception.Message
+        }
+    }
 }
-elseif ($RolesAvailability) {
+
+if ($RolesAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.IP.12" -AvailabilityState $RolesAvailability
 }
-else {
-    Export-ControlResult -ControlID "AAD.IP.12" -Data $(if ($PhishingResistantPolicy.Count -gt 0) { $PhishingResistantPolicy } else { $PrivilegedAccounts }) -Result $(if ($PhishingResistantPolicy.Count -gt 0) { "$($PhishingResistantPolicy.Count) authentication strength policies found for strong MFA" } else { "No phishing-resistant MFA policy evidence found for privileged users" }) -Status $(if ($PhishingResistantPolicy.Count -gt 0) { "WARNING" } else { "FAIL" })
+elseif ($IP12UnavailableState) {
+    Export-ControlUnavailableFromState -ControlID "AAD.IP.12" -AvailabilityState $IP12UnavailableState
 }
-
+else {
+    Export-ControlResult -ControlID "AAD.IP.12" -Data $AdminsWithoutPhishingResistantMFA -Result "$($AdminsWithoutPhishingResistantMFA.Count) privileged accounts do not have phishing-resistant MFA methods detected" -Status $(if ($AdminsWithoutPhishingResistantMFA.Count -eq 0) { "PASS" } else { "FAIL" })
+}
 Export-SummaryReport "IdentityProtection"
 
 Write-Host "Identity Protection audit completed."
+
+
 
 
 

@@ -13,6 +13,7 @@ $Global:OneDriveSessionInitialized = $false
 $TenantId = '8c89bad5-dc8a-4e24-9873-0a6a9d8ba399'
 $ClientId = 'be3fb208-3add-47dc-87c8-5be8dae016b2'
 $CertificateThumbprint = ''
+$ExchangeOrganization = ''
 $ReportsPath = Join-Path $PSScriptRoot 'Reports'
 $SummaryPath = Join-Path $ReportsPath 'Summary'
 $DetailedPath = Join-Path $ReportsPath 'Detailed'
@@ -92,17 +93,8 @@ function Ensure-ExchangeSession {
             throw 'Set $CertificateThumbprint in main.ps1.'
         }
 
-        Ensure-EntraSession
-
-        $exchangeOrganization = @(
-            Get-CachedDomains |
-            Where-Object { $_.Id -like '*.onmicrosoft.com' } |
-            Sort-Object IsDefault -Descending |
-            Select-Object -First 1 -ExpandProperty Id
-        ) | Select-Object -First 1
-
-        if ([string]::IsNullOrWhiteSpace($exchangeOrganization)) {
-            throw 'Could not determine Exchange organization from tenant domains.'
+        if ([string]::IsNullOrWhiteSpace($ExchangeOrganization)) {
+            throw 'Set $ExchangeOrganization in main.ps1.'
         }
 
         Write-Host ''
@@ -110,7 +102,7 @@ function Ensure-ExchangeSession {
         Connect-ExchangeOnline `
             -AppId $ClientId `
             -CertificateThumbprint $CertificateThumbprint `
-            -Organization $exchangeOrganization `
+            -Organization $ExchangeOrganization `
             -ShowBanner:$false
         Write-Host 'Connected to Exchange'
         Write-Host ''
