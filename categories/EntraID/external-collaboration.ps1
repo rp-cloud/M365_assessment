@@ -10,10 +10,10 @@ $TotalControls = 4
 $CurrentControl = 0
 
 $Users = Get-CachedUsers
-$SignIns90 = Get-CachedSignIns -Days 90
+$SignIns90 = Get-CachedSignIns -Days 90 -Top 40000
 $GuestUsers = @($Users | Where-Object { $_.UserType -eq "Guest" })
 $UsersAvailability = Get-AuditFirstUnavailableState -Keys @("Users")
-$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_90")
+$SignInsAvailability = Get-AuditFirstUnavailableState -Keys @("SignIns_90_Top40000")
 $OrganizationAvailability = Get-AuditFirstUnavailableState -Keys @("Organization")
 
 $LastSignInByUser = @{}
@@ -138,5 +138,6 @@ Export-ControlResult -ControlID "AAD.EC.04" -Data $Partners -Result $EC04Result 
 Export-SummaryReport "ExternalCollaboration"
 
 Write-Host "External Collaboration audit completed."
+
 
 

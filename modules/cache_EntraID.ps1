@@ -311,10 +311,10 @@ function Get-CachedSignIns {
 
         try {
             if ($Top -gt 0) {
-                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -Top $Top -ErrorAction Stop)
+                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -Top $Top -Property UserPrincipalName,AppDisplayName,CreatedDateTime,IPAddress,Status,Location -ErrorAction Stop)
             }
             else {
-                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -All -ErrorAction Stop)
+                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -All -Property UserPrincipalName,AppDisplayName,CreatedDateTime,IPAddress,Status,Location -ErrorAction Stop)
             }
 
             Set-AuditAvailabilityState -Key $Key -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgAuditLogSignIn"

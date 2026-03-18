@@ -44,9 +44,7 @@ Write-Host "[$CurrentControl/$TotalControls] AAD.CA.02 Risky sign-in policies"
 $RiskPolicies = @(
     $Policies |
     Where-Object {
-        $_.State -eq "enabled" -and
-        $_.Conditions.SignInRiskLevels -and
-        $_.GrantControls.BuiltInControls -contains "block"
+        @($_.Conditions.SignInRiskLevels).Count -gt 0
     } |
     Select-Object DisplayName, State,
         @{Name = "SignInRiskLevels"; Expression = { $_.Conditions.SignInRiskLevels -join "," } },
@@ -57,7 +55,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.CA.02" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.CA.02" -Data $RiskPolicies -Result "$($RiskPolicies.Count) enabled Conditional Access policies block risky sign-ins" -Status $(if ($RiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
+    Export-ControlResult -ControlID "AAD.CA.02" -Data $RiskPolicies -Result "$($RiskPolicies.Count) Conditional Access policies target sign-in risk" -Status $(if ($RiskPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -315,4 +313,3 @@ else {
 Export-SummaryReport "ConditionalAccess"
 
 Write-Host "Conditional Access audit completed."
-

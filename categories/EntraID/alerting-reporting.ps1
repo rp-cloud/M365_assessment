@@ -50,7 +50,7 @@ Write-Host "[$CurrentControl/$TotalControls] AAD.AR.02 Multiple geographies"
 
 $GeoData = @(
     $SignIns |
-    Where-Object { $_.UserPrincipalName -and $_.Location.CountryOrRegion } |
+    Where-Object { $_.Location -and $_.Location.CountryOrRegion } |
     Group-Object UserPrincipalName |
     ForEach-Object {
         $Countries = @($_.Group.Location.CountryOrRegion | Sort-Object -Unique)
@@ -208,6 +208,7 @@ else {
 Export-SummaryReport "AAD_AlertingReporting"
 
 Write-Host "Alerting & Reporting audit completed."
+
 
 
 
