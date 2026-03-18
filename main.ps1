@@ -12,6 +12,7 @@ $Global:OneDriveSessionInitialized = $false
 
 $TenantId = '8c89bad5-dc8a-4e24-9873-0a6a9d8ba399'
 $ClientId = 'be3fb208-3add-47dc-87c8-5be8dae016b2'
+$CertificateThumbprint = ''
 $ReportsPath = Join-Path $PSScriptRoot 'Reports'
 $SummaryPath = Join-Path $ReportsPath 'Summary'
 $DetailedPath = Join-Path $ReportsPath 'Detailed'
@@ -24,36 +25,40 @@ function Ensure-EntraSession {
         return
     }
 
-    Write-Host 'Checking Microsoft Graph module...'
+    Write-Host 'Checking Graph module...'
 
     $graphModule = Get-Module -ListAvailable -Name Microsoft.Graph
     if (-not $graphModule) {
-        Write-Host 'Microsoft.Graph module not found. Installing...'
+        Write-Host 'Installing Graph module...'
         Install-Module Microsoft.Graph -Scope CurrentUser -Force
     }
 
     Import-Module Microsoft.Graph
 
     Write-Host ''
-    Write-Host '==== EntraID Authentication ===='
+    Write-Host '==== EntraID Login ===='
 
     Disconnect-MgGraph -ErrorAction SilentlyContinue
-    $clientSecretCredential = Get-Credential -Credential $ClientId
+
+    if ([string]::IsNullOrWhiteSpace($CertificateThumbprint)) {
+        throw 'Set $CertificateThumbprint in main.ps1.'
+    }
 
     Connect-MgGraph `
         -TenantId $TenantId `
-        -ClientSecretCredential $clientSecretCredential
+        -ClientId $ClientId `
+        -CertificateThumbprint $CertificateThumbprint
 
-    Write-Host 'Connected to Microsoft Graph'
+    Write-Host 'Connected to Graph'
     Write-Host ''
-    Write-Host 'Preloading EntraID Graph cache...'
+    Write-Host 'Loading EntraID cache...'
 
     Get-CachedUsers | Out-Null
     Get-CachedCAPolicies | Out-Null
     Get-CachedLocations | Out-Null
     Get-CachedRoles | Out-Null
 
-    Write-Host 'EntraID Graph cache ready'
+    Write-Host 'EntraID cache ready'
     Write-Host ''
 
     $Global:EntraGraphInitialized = $true
@@ -64,11 +69,11 @@ function Ensure-ExchangeSession {
         return
     }
 
-    Write-Host 'Checking ExchangeOnlineManagement module...'
+    Write-Host 'Checking Exchange module...'
 
     $exchangeModule = Get-Module -ListAvailable -Name ExchangeOnlineManagement
     if (-not $exchangeModule) {
-        Write-Host 'ExchangeOnlineManagement module not found. Installing...'
+        Write-Host 'Installing Exchange module...'
         Install-Module ExchangeOnlineManagement -Scope CurrentUser -Force
     }
 
@@ -83,14 +88,35 @@ function Ensure-ExchangeSession {
     }
 
     if ($connectionInfo.Count -eq 0) {
+        if ([string]::IsNullOrWhiteSpace($CertificateThumbprint)) {
+            throw 'Set $CertificateThumbprint in main.ps1.'
+        }
+
+        Ensure-EntraSession
+
+        $exchangeOrganization = @(
+            Get-CachedDomains |
+            Where-Object { $_.Id -like '*.onmicrosoft.com' } |
+            Sort-Object IsDefault -Descending |
+            Select-Object -First 1 -ExpandProperty Id
+        ) | Select-Object -First 1
+
+        if ([string]::IsNullOrWhiteSpace($exchangeOrganization)) {
+            throw 'Could not determine Exchange organization from tenant domains.'
+        }
+
         Write-Host ''
-        Write-Host '==== Exchange Authentication ===='
-        Connect-ExchangeOnline -ShowBanner:$false
-        Write-Host 'Connected to Exchange Online'
+        Write-Host '==== Exchange Login ===='
+        Connect-ExchangeOnline `
+            -AppId $ClientId `
+            -CertificateThumbprint $CertificateThumbprint `
+            -Organization $exchangeOrganization `
+            -ShowBanner:$false
+        Write-Host 'Connected to Exchange'
         Write-Host ''
     }
 
-    Write-Host 'Preloading Exchange cache...'
+    Write-Host 'Loading Exchange cache...'
     Get-CachedExoOrganizationConfig | Out-Null
     Get-CachedExoOwaMailboxPolicies | Out-Null
     Get-CachedExoMailboxes | Out-Null
@@ -109,8 +135,8 @@ function Ensure-OneDriveSession {
     }
 
     Write-Host ''
-    Write-Host '==== OneDrive Bootstrap ===='
-    Write-Host 'OneDrive bootstrap skeleton is ready for future module loading and authentication.'
+    Write-Host '==== OneDrive ===='
+    Write-Host 'OneDrive module is still a placeholder.'
     Write-Host ''
 
     $Global:OneDriveSessionInitialized = $true
