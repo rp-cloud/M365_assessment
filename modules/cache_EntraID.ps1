@@ -27,7 +27,7 @@ function Get-CachedUsers {
     return Get-CacheItem -Key "Users" -Loader {
         Write-Host "Loading users from Graph..."
         try {
-            $Users = Get-MgUser -All -Property `
+            $Users = Get-MgUser -All -ErrorAction Stop -Property `
                 Id,
                 DisplayName,
                 UserPrincipalName,
@@ -124,7 +124,7 @@ function Get-CachedRoles {
     return Get-CacheItem -Key "Roles" -Loader {
         Write-Host "Loading directory roles..."
         try {
-            $result = @(Get-MgDirectoryRole)
+            $result = @(Get-MgDirectoryRole -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "Roles" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgDirectoryRole"
             $result
         }
@@ -143,7 +143,7 @@ function Get-CachedRoleMembers {
 
         foreach ($Role in (Get-CachedRoles)) {
             try {
-                $RoleMembers[$Role.Id] = @(Get-MgDirectoryRoleMember -DirectoryRoleId $Role.Id -All)
+                $RoleMembers[$Role.Id] = @(Get-MgDirectoryRoleMember -DirectoryRoleId $Role.Id -All -ErrorAction Stop)
             }
             catch {
                 $RoleMembers[$Role.Id] = @()
@@ -160,7 +160,7 @@ function Get-CachedPasswordProtectionPolicy {
     return Get-CacheItem -Key "PasswordProtection" -Loader {
         Write-Host "Loading password protection policy..."
         try {
-            $result = Invoke-MgGraphRequest -Method GET -Uri "/beta/policies/authenticationMethodsPolicy/passwordProtection"
+            $result = Invoke-MgGraphRequest -Method GET -Uri "/beta/policies/authenticationMethodsPolicy/passwordProtection" -ErrorAction Stop
             Set-AuditAvailabilityState -Key "PasswordProtection" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Invoke-MgGraphRequest /beta/policies/authenticationMethodsPolicy/passwordProtection"
             $result
         }
@@ -176,7 +176,7 @@ function Get-CachedAuthorizationPolicy {
     return Get-CacheItem -Key "AuthorizationPolicy" -Loader {
         Write-Host "Loading authorization policy..."
         try {
-            $result = Get-MgPolicyAuthorizationPolicy
+            $result = Get-MgPolicyAuthorizationPolicy -ErrorAction Stop
             Set-AuditAvailabilityState -Key "AuthorizationPolicy" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgPolicyAuthorizationPolicy"
             $result
         }
@@ -191,7 +191,7 @@ function Get-CachedOrganization {
     return Get-CacheItem -Key "Organization" -Loader {
         Write-Host "Loading organization details..."
         try {
-            $result = @(Get-MgOrganization)
+            $result = @(Get-MgOrganization -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "Organization" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgOrganization"
             $result
         }
@@ -206,7 +206,7 @@ function Get-CachedDomains {
     return Get-CacheItem -Key "Domains" -Loader {
         Write-Host "Loading domains..."
         try {
-            $result = @(Get-MgDomain)
+            $result = @(Get-MgDomain -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "Domains" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgDomain"
             $result
         }
@@ -221,7 +221,7 @@ function Get-CachedSecurityDefaults {
     return Get-CacheItem -Key "SecurityDefaults" -Loader {
         Write-Host "Loading security defaults policy..."
         try {
-            $result = Get-MgPolicyIdentitySecurityDefaultEnforcementPolicy
+            $result = Get-MgPolicyIdentitySecurityDefaultEnforcementPolicy -ErrorAction Stop
             Set-AuditAvailabilityState -Key "SecurityDefaults" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgPolicyIdentitySecurityDefaultEnforcementPolicy"
             $result
         }
@@ -237,7 +237,7 @@ function Get-CachedGroupLifecyclePolicies {
     return Get-CacheItem -Key "GroupLifecyclePolicies" -Loader {
         Write-Host "Loading group lifecycle policies..."
         try {
-            $result = @(Get-MgGroupLifecyclePolicy)
+            $result = @(Get-MgGroupLifecyclePolicy -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "GroupLifecyclePolicies" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgGroupLifecyclePolicy"
             $result
         }
@@ -252,7 +252,7 @@ function Get-CachedAccessReviewDefinitions {
     return Get-CacheItem -Key "AccessReviewDefinitions" -Loader {
         Write-Host "Loading access review definitions..."
         try {
-            $result = @(Get-MgIdentityGovernanceAccessReviewDefinition -All)
+            $result = @(Get-MgIdentityGovernanceAccessReviewDefinition -All -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "AccessReviewDefinitions" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgIdentityGovernanceAccessReviewDefinition -All"
             $result
         }
@@ -268,7 +268,7 @@ function Get-CachedTermsOfUse {
     return Get-CacheItem -Key "TermsOfUse" -Loader {
         Write-Host "Loading Terms of Use..."
         try {
-            $result = @(Get-MgIdentityGovernanceTermsOfUse -All)
+            $result = @(Get-MgIdentityGovernanceTermsOfUse -All -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "TermsOfUse" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgIdentityGovernanceTermsOfUse -All"
             $result
         }
@@ -284,7 +284,7 @@ function Get-CachedUserRegistrationDetails {
     return Get-CacheItem -Key "UserRegistrationDetails" -Loader {
         Write-Host "Loading authentication registration details..."
         try {
-            $result = @(Get-MgReportAuthenticationMethodUserRegistrationDetail -All)
+            $result = @(Get-MgReportAuthenticationMethodUserRegistrationDetail -All -ErrorAction Stop)
             Set-AuditAvailabilityState -Key "UserRegistrationDetails" -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgReportAuthenticationMethodUserRegistrationDetail -All"
             $result
         }
@@ -311,10 +311,10 @@ function Get-CachedSignIns {
 
         try {
             if ($Top -gt 0) {
-                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -Top $Top)
+                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -Top $Top -ErrorAction Stop)
             }
             else {
-                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -All)
+                $result = @(Get-MgAuditLogSignIn -Filter "createdDateTime ge $Since" -All -ErrorAction Stop)
             }
 
             Set-AuditAvailabilityState -Key $Key -Status "AVAILABLE" -Reason "Loaded successfully" -Source "Get-MgAuditLogSignIn"
