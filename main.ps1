@@ -12,7 +12,7 @@ $Global:OneDriveSessionInitialized = $false
 
 $TenantId = '8c89bad5-dc8a-4e24-9873-0a6a9d8ba399'
 $ClientId = 'be3fb208-3add-47dc-87c8-5be8dae016b2'
-$CertificateThumbprint = ''
+$CertificateThumbprint = '27924d925b02ae47ae1d128b0030a200870b9963'
 $ExchangeOrganization = ''
 $ReportsPath = Join-Path $PSScriptRoot 'Reports'
 $SummaryPath = Join-Path $ReportsPath 'Summary'

@@ -33,7 +33,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.GV.01" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.GV.01" -Data $ReauthPolicies -Result "$($ReauthPolicies.Count) Conditional Access policies define sign-in frequency/session governance" -Status $(if ($ReauthPolicies.Count -gt 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.GV.01" -Data $ReauthPolicies -Result "$($ReauthPolicies.Count) Conditional Access policies define sign-in frequency/session governance" -Status $(if ($ReauthPolicies.Count -gt 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -160,7 +160,3 @@ Export-ControlResult -ControlID "AAD.GV.07" -Data $WeeklyDigestInfo -Result "Man
 Export-SummaryReport "Governance"
 
 Write-Host "Governance audit completed."
-
-
-
-

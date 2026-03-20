@@ -52,7 +52,7 @@
     "MS_Service": "Microsoft Entra ID - Conditional Access",
     "M365_Control": "Ensure that 'Trusted Locations' are defined",
     "Recommendation": "Define 'Trusted Locations'",
-    "Expected_Value": "Trusted Locations are defined as the specific IPs, and checked as trusted.\nPossible need of acquiring the list of specific IP list before\nIf there is not a list of IP addresses for trusted locations, possible need of designating specific ones.\n",
+    "Expected_Value": "Trusted Locations are defined",
     "Comment": "N/A"
   },
   {
@@ -100,7 +100,7 @@
     "MS_Service": "Microsoft Entra ID - Conditional Access",
     "M365_Control": "Ensure that 'Multifactor authentication' is required for Intune device enrollments",
     "Recommendation": "1. Create dedicated 'Conditional Access' that required 'Multifactor Authentication' policy for Intune Device enrollments\n2. Set 'Require Multifactor Authentication to register or join devices with Microsoft Entra' to 'Yes' in Microsoft Entra ID -> Devices -> Device setting",
-    "Expected_Value": "1. Created conditional access policy with 'Grant' set to 'Grant access: Require multifactor authentication'\n2. Yes",
+    "Expected_Value": "Conditional Access policy requires MFA for Intune device enrollments",
     "Comment": "N/A"
   },
   {
@@ -124,7 +124,7 @@
     "MS_Service": "Microsoft Entra ID - External Collaboration",
     "M365_Control": "Ensure that external accounts (on tenant level) not used in last '30' days are disabled",
     "Recommendation": "Review all external accounts with a last sign-in date greater than 30 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID tenant. Due to fact that there may be different situations and business needs, the Governance of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 30 days)\n\nThe recommendation is a part of Control ID: AAD.IM.02",
-    "Expected_Value": "CSV or API proof of the said accounts being disabled",
+    "Expected_Value": "External accounts (on tenant level) not used in last '30' days are disabled",
     "Comment": "N/A"
   },
   {
@@ -132,7 +132,7 @@
     "MS_Service": "Microsoft Entra ID - External Collaboration",
     "M365_Control": "Ensure that guest accounts (on tenant level) not used in last '90' days are disabled",
     "Recommendation": "Review all guest accounts with a last sign-in date greater than 90 days ago (or greater based on business requirements) and block sign-in to the account or delete it from your Microsoft Entra ID. ue to fact that there may be different situations and business needs, the Governance of lifecycle of external identities (e.g. Consultants) should be automated as best effort (e.g. creating automating scripts that will block unused accounts greater than 90 days).\n\nThe recommendation is a part of Control ID: AAD.IM.02",
-    "Expected_Value": "CSV or API proof of the said accounts being disabled",
+    "Expected_Value": "External accounts (on tenant level) not used in last '90' days are disabled",
     "Comment": "N/A"
   },
   {
@@ -156,7 +156,7 @@
     "MS_Service": "Microsoft Entra ID - Governance",
     "M365_Control": "Optimize reauthentication prompts and  session lifetime for Azure AD Multi-Factor Authentication",
     "Recommendation": "To give your users the right balance of security and ease of use by asking them to sign in at the right frequency. \n  - If re-authentication will be considered as required, create 'Conditional Access' sign in frequency policy across all organizational devices and users\n  - For users that sign in from non-managed devices or mobile devices, create 'Conditional Access' policy with sign-in frequency policy with slightly limited duration to an appropriate time based on the sign-in risk, where a user with less risk has a longer session duration",
-    "Expected_Value": "Created Conditional Access Policy and all guideline recommendations have been met",
+    "Expected_Value": "Conditional Access policies define sign-in frequency or session lifetime settings",
     "Comment": "N/A"
   },
   {
@@ -164,7 +164,7 @@
     "MS_Service": "Microsoft Entra ID - Governance",
     "M365_Control": "Ensure proper revocation method of access and refresh token for account compromise for hybrid identities",
     "Recommendation": "Redefine Incident Response Plan or Change Configuration in your tenant settings\nThere are several options that can protect against account compromise. All of these options involve process changes except one that involves a change in the way password hash sync works. It is important to do what you believe is best for your organization while also keeping in mind that process failures happen more often than configuration failures.\n\n  - No longer check the box that states “user must change password at next logon” when changing a password and rely on the user to change the password again.\n  - Change the password without the box that states “user must change password at next logon” and then change it again with the box selected.\n  - After changing a compromised accounts credentials, run the mentioned PowerShell cmdlet to revoke all refresh tokens for the account.\n  - Change the password in Azure Active Directory instead of on-premise Active Directory. Note that this will only work if you have write-back enabled so it can write back to your on-premise Active Directory.\n  - Implement the following change (that Microsoft has thankfully added functionality for) against your AAD environment. This will force these “non-secret” or “temporary passwords” to sync with AAD. The field “ForcePasswordResetOnLogonFeature” is set to “$false” by default and can be changed. Run the following command via PowerShell.\n\nThe recommendation is a part of Control ID: INCD.RE.01",
-    "Expected_Value": "Interview about the method used for revoking. Check if the Azure AD admin can carry out the revoking process using powershell (e.g. 'Disable-ADAccount' and '' Set-ADAccountPassword'",
+    "Expected_Value": "Revocation process is in place.",
     "Comment": "Manual verification required"
   },
   {
@@ -211,8 +211,8 @@
     "Control_ID": "AAD.IM.01",
     "MS_Service": "Microsoft Entra ID - Identity Management",
     "M365_Control": "Ensure that internal accounts (on tenant level) not used in last 30 days are 'Disabled'",
-    "Recommendation": "Review all internal accounts synchronized to Microsoft Entra ID ('Azure Active Directory') with a last sign-in date greater than 30 days ago (or greater based on business requriements) and block sign-in to the account or delete it from your local directory. Due to fact that there may be situations that users can request for long term absence (unpaid holidays, maternity leave) the process should be automated as best effort (for e.g additional custom atribute with user's status synchronized from HRIS to local AD system).",
-    "Expected_Value": "Interview whether there are procedures for carrying out Identity Lifecycle management. If there are such procedures, who is responsible for carrying them out, are there documents on the procedures, are there any documentation regarding the effect of such management, check whether there is evidence of a connection between the records system and databases.",
+    "Recommendation": "Review all internal accounts synchronized to Microsoft Entra ID ('Azure Active Directory') with a last sign-in date greater than 30 days ago (or greater based on business requriements) and block sign-in to the account or delete it from your local directory. Due to fact that there may be situations that users can request for long term absence (unpaid holidays, maternity leave) the process should be automated as best effort (for e.g additional custom atribute with user's status synchronized from HR to local AD system).",
+    "Expected_Value": "Inactive internal accounts older than 30 days are disabled or removed",
     "Comment": "N/A"
   },
   {
@@ -228,7 +228,7 @@
     "MS_Service": "Microsoft Entra ID - Identity Management",
     "M365_Control": "Ensure the process of reviewing and reconciling user access is completed regularly",
     "Recommendation": "Establish regular process of periodic Access Review for all users in organization (not limited only to Global Administrators and other administrative roles). To define process, recommended is to use Privileged Identity Management Solution to configure process for periodic access review including following practices:\n  1. Apply principle of least privilege - Define a list of users for whom additional permissions may be required and a list of these permissions\n  2. Grant just-in-time access - Define access policy only when required which actions that are required before activation the role (requesting, approval form, justification)\n  3. Protect accounts - Turn on multifactor authentication for all administrator accounts before role activation\n  4. Regular access reviews - Perform regular access reviews to revoke access automatically\n  5. Limit usage of Global Administrator accounts - There should be defined less than 5 global administrators and only privileged users should request for this role. Global Administrator Account should not be used for day to day tasks and these activities should be replaced with Azure AD roles\n\nThe recommendation is a part of Control ID: AAD.IM.02",
-    "Expected_Value": "Documentation needed for reviews carried out. Checking the dates of reviews. If the inspection is performed before the review date in a given month or for the first time, the Tester Guideline should be followed.",
+    "Expected_Value": "Recurring access reviews are configured for user access",
     "Comment": "Review process should be established for this control"
   },
   {
@@ -236,7 +236,7 @@
     "MS_Service": "Microsoft Entra ID - Identity Management",
     "M365_Control": "Ensure an 'Access Review' process for Teams and Sharepoint sites based on Microsoft 365 Groups is performed regularly",
     "Recommendation": "Perform regular process of 'Access Review' of membership for all Teams and Microsoft 365 Groups. To automate the process it is recommended to use Microsoft Entra ID Identity Governance 'Access Review' service or other third party solution if applicable. \n\nThe recommendation is a part of Control ID: AAD.SC.16",
-    "Expected_Value": "There is a policy specifying the inactivity timespan.\nIt is enabled.\nThere are no inactive users in the inactive users list, if there are, the whole process described in Guidance should be carried out",
+    "Expected_Value": "Recurring access reviews are configured for Teams and Microsoft 365 Groups",
     "Comment": "Review process should be established for this control"
   },
   {
@@ -380,7 +380,7 @@
     "MS_Service": "Microsoft Entra ID - Privileged Access ",
     "M365_Control": "Ensure that privileged access workstations are in use for administrative tasks",
     "Recommendation": "Use privileged access workstations for administrative tasks",
-    "Expected_Value": "Check on the machine used by the admins, and if rules and policies for its use are in place",
+    "Expected_Value": "Privileged access workstations are used for administrative tasks",
     "Comment": "Manual verification required"
   },
   {
@@ -397,7 +397,7 @@
     "M365_Control": "Ensure that highly privileged/administrative users are separated from regular accounts",
     "Recommendation": "Ensure you are identifying all high business impact accounts. Limit the number of privileged/administrative accounts in your cloud's control plane, management plane and data/workload plane",
     "Expected_Value": "All Global administrator accounts are separated from regular accounts",
-    "Comment": "N/A"
+    "Comment": "This control is checked heuristically based on assigned licenses and should be manually verified"
   },
   {
     "Control_ID": "AAD.CA.09",
@@ -524,7 +524,7 @@
     "MS_Service": "Microsoft Entra ID - Security Configuration",
     "M365_Control": "Ensure that 'Company Branding' is configured",
     "Recommendation": "'Company branding' should be configured to to prettify the sign-in experience for end-users",
-    "Expected_Value": "Ask the administrator about company branding guidelines\nThe Company branding is configured according to the guidelines",
+    "Expected_Value": "The Company branding is configured",
     "Comment": "N/A"
   },
   {
@@ -532,7 +532,7 @@
     "MS_Service": "Microsoft Entra ID - Security Configuration",
     "M365_Control": "Ensure that 'Group lifetime (in days)' settings are configured for Groups",
     "Recommendation": "Set 'Group lifetime (in days)' to '90 (days)' and provide an email address where expiration notifications should be sent when a group has no owner.",
-    "Expected_Value": "90 days\nMail provided ",
+    "Expected_Value": "Group lifetime is set to 90 days.\nMail where expiration notifications should be sent is provided ",
     "Comment": "N/A"
   },
   {
@@ -552,11 +552,3 @@
     "Comment": "Manual verification required"
   }
 ]
-
-
-
-
-
-
-
-

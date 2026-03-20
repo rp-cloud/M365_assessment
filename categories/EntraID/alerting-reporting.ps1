@@ -38,7 +38,7 @@ if ($SignInsAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.AR.01" -AvailabilityState $SignInsAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.AR.01" -Data $FailureData -Result "$($FailureData.Count) failed sign-ins in the last 30 days" -Status $(if ($FailureData.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.AR.01" -Data $FailureData -Result "$($FailureData.Count) failed sign-ins in the last 30 days" -Status "INFO"
 }
 
 ############################################################
@@ -69,7 +69,7 @@ if ($SignInsAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.AR.02" -AvailabilityState $SignInsAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.AR.02" -Data $GeoData -Result "$($GeoData.Count) users signed in from multiple geographies in the last 30 days" -Status $(if ($GeoData.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.AR.02" -Data $GeoData -Result "$($GeoData.Count) users signed in from multiple geographies in the last 30 days" -Status "INFO"
 }
 
 ############################################################
@@ -119,7 +119,7 @@ try {
         Get-MgRiskySignIn -Filter "createdDateTime ge $((Get-Date).AddDays(-30).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ"))" -All |
         Select-Object UserDisplayName, UserPrincipalName, RiskLevel, RiskState, RiskDetail, CreatedDateTime
     )
-    $AR04Status = if ($RiskyData.Count -eq 0) { "PASS" } else { "WARNING" }
+    $AR04Status = "INFO"
     $AR04Result = "$($RiskyData.Count) risky sign-ins detected in the last 30 days"
 }
 catch {
@@ -141,7 +141,7 @@ catch {
                 Message = "Unable to read risky sign-ins through Microsoft Graph."
             }
         )
-        $AR04Status = "MANUAL"
+        $AR04Status = "INFO"
         $AR04Result = "Risky sign-ins could not be retrieved automatically"
     }
 }
@@ -208,8 +208,3 @@ else {
 Export-SummaryReport "AAD_AlertingReporting"
 
 Write-Host "Alerting & Reporting audit completed."
-
-
-
-
-

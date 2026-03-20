@@ -87,7 +87,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.CA.03" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.CA.03" -Data $Exclusions -Result "$($Exclusions.Count) Conditional Access policies contain exclusions" -Status $(if ($Exclusions.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.CA.03" -Data $Exclusions -Result "$($Exclusions.Count) Conditional Access policies contain exclusions" -Status $(if ($Exclusions.Count -eq 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -117,7 +117,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.CA.04" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.CA.04" -Data $UserScopeIssues -Result "$($UserScopeIssues.Count) policies have limited or unclear user scope" -Status $(if ($UserScopeIssues.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.CA.04" -Data $UserScopeIssues -Result "$($UserScopeIssues.Count) policies have limited or unclear user scope" -Status $(if ($UserScopeIssues.Count -eq 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -163,7 +163,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.CA.06" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.CA.06" -Data $PlatformPolicies -Result "$($PlatformPolicies.Count) policies explicitly target or exclude device platforms" -Status $(if ($PlatformPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.CA.06" -Data $PlatformPolicies -Result "$($PlatformPolicies.Count) policies explicitly target or exclude device platforms" -Status $(if ($PlatformPolicies.Count -eq 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -249,7 +249,7 @@ if ($CAAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.CA.09" -AvailabilityState $CAAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.CA.09" -Data $AppScopingPolicies -Result "$($AppScopingPolicies.Count) policies include specific applications or exclude applications" -Status $(if ($AppScopingPolicies.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.CA.09" -Data $AppScopingPolicies -Result "$($AppScopingPolicies.Count) policies include specific applications or exclude applications" -Status $(if ($AppScopingPolicies.Count -eq 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -292,9 +292,6 @@ $TechnicalAccountExclusions = @(
 $TechnicalExclusionsWithCompensation = @($TechnicalAccountExclusions | Where-Object { $_.CompensatingPolicyCount -gt 0 })
 $CA10Status = if ($TechnicalAccountExclusions.Count -eq 0) {
     "PASS"
-}
-elseif ($Trusted.Count -gt 0 -and $TechnicalExclusionsWithCompensation.Count -eq $TechnicalAccountExclusions.Count) {
-    "WARNING"
 }
 else {
     "FAIL"

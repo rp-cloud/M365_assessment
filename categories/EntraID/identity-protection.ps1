@@ -71,7 +71,7 @@ if ($RegistrationAvailability -and (Test-AuditUnavailableStatus -Status $Registr
     Export-ControlUnavailable -ControlID "AAD.IP.02" -Status $RegistrationAvailability.Status -Reason $RegistrationAvailability.Reason -Source $RegistrationAvailability.Source
 }
 else {
-    Export-ControlResult -ControlID "AAD.IP.02" -Data $AltContactData -Result "$($UsersMissingRecovery.Count) users are not registered for SSPR/recovery information" -Status $(if ($UsersMissingRecovery.Count -eq 0 -and $AltContactData.Count -gt 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.IP.02" -Data $AltContactData -Result "$($UsersMissingRecovery.Count) users are not registered for SSPR/recovery information" -Status $(if ($UsersMissingRecovery.Count -eq 0 -and $AltContactData.Count -gt 0) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -335,9 +335,3 @@ else {
 Export-SummaryReport "IdentityProtection"
 
 Write-Host "Identity Protection audit completed."
-
-
-
-
-
-

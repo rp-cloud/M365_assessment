@@ -17,22 +17,86 @@ $RolesAvailability = Get-AuditFirstUnavailableState -Keys @("Roles")
 
 $GARole = $Roles | Where-Object { $_.DisplayName -eq "Global Administrator" } | Select-Object -First 1
 $GAUsers = @()
+$PIMGAUsers = @()
+$PIMForPA01Warning = $null
 
 if ($GARole) {
     foreach ($Member in $RoleMembers[$GARole.Id]) {
         $User = $UsersById[$Member.Id]
         if ($User) {
             $GAUsers += [PSCustomObject]@{
+                PrincipalId           = $User.Id
                 DisplayName           = $User.DisplayName
                 UserPrincipalName     = $User.UserPrincipalName
                 UserType              = $User.UserType
                 AccountEnabled        = $User.AccountEnabled
                 OnPremisesSyncEnabled = $User.OnPremisesSyncEnabled
                 AssignedLicenses      = @($User.AssignedLicenses).Count
+                AssignmentSource      = "DirectoryRole"
+                AssignmentType        = "Active"
             }
         }
     }
+
+    try {
+        $GlobalAdminRoleDefinition = @(
+            Get-MgRoleManagementDirectoryRoleDefinition -All -ErrorAction Stop |
+            Where-Object { $_.DisplayName -eq "Global Administrator" } |
+            Select-Object -First 1
+        )
+
+        if ($GlobalAdminRoleDefinition) {
+            $EligibilitySchedules = @(Get-MgRoleManagementDirectoryRoleEligibilitySchedule -All -ErrorAction Stop)
+            $AssignmentSchedules = @(Get-MgRoleManagementDirectoryRoleAssignmentSchedule -All -ErrorAction Stop)
+
+            $PIMGAUsers = @(
+                foreach ($Schedule in ($EligibilitySchedules | Where-Object { $_.RoleDefinitionId -eq $GlobalAdminRoleDefinition.Id })) {
+                    $User = $UsersById[$Schedule.PrincipalId]
+                    if ($User) {
+                        [PSCustomObject]@{
+                            PrincipalId           = $User.Id
+                            DisplayName           = $User.DisplayName
+                            UserPrincipalName     = $User.UserPrincipalName
+                            UserType              = $User.UserType
+                            AccountEnabled        = $User.AccountEnabled
+                            OnPremisesSyncEnabled = $User.OnPremisesSyncEnabled
+                            AssignedLicenses      = @($User.AssignedLicenses).Count
+                            AssignmentSource      = "PIM"
+                            AssignmentType        = "Eligible"
+                        }
+                    }
+                }
+
+                foreach ($Schedule in ($AssignmentSchedules | Where-Object { $_.RoleDefinitionId -eq $GlobalAdminRoleDefinition.Id })) {
+                    $User = $UsersById[$Schedule.PrincipalId]
+                    if ($User) {
+                        [PSCustomObject]@{
+                            PrincipalId           = $User.Id
+                            DisplayName           = $User.DisplayName
+                            UserPrincipalName     = $User.UserPrincipalName
+                            UserType              = $User.UserType
+                            AccountEnabled        = $User.AccountEnabled
+                            OnPremisesSyncEnabled = $User.OnPremisesSyncEnabled
+                            AssignedLicenses      = @($User.AssignedLicenses).Count
+                            AssignmentSource      = "PIM"
+                            AssignmentType        = "Active"
+                        }
+                    }
+                }
+            )
+        }
+    }
+    catch {
+        $PIMForPA01Warning = "PIM Global Administrator assignments could not be retrieved"
+    }
 }
+
+$PA01Data = @($GAUsers + $PIMGAUsers)
+$PA01UniquePrincipalIds = @($PA01Data | Where-Object { $_.PrincipalId } | Select-Object -ExpandProperty PrincipalId -Unique)
+$PA01UniqueCount = $PA01UniquePrincipalIds.Count
+$PA01DirectCount = @($GAUsers | Select-Object -ExpandProperty PrincipalId -Unique).Count
+$PA01PIMEligibleCount = @($PIMGAUsers | Where-Object { $_.AssignmentType -eq "Eligible" } | Select-Object -ExpandProperty PrincipalId -Unique).Count
+$PA01PIMActiveCount = @($PIMGAUsers | Where-Object { $_.AssignmentType -eq "Active" } | Select-Object -ExpandProperty PrincipalId -Unique).Count
 
 ############################################################
 # AAD.PA.01
@@ -48,7 +112,12 @@ elseif ($RolesAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.PA.01" -AvailabilityState $RolesAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.PA.01" -Data $GAUsers -Result "$($GAUsers.Count) Global Administrator accounts found" -Status $(if ($GAUsers.Count -ge 2 -and $GAUsers.Count -le 4) { "PASS" } else { "FAIL" })
+    $PA01Result = "$PA01UniqueCount unique Global Administrator accounts found ($PA01DirectCount direct, $PA01PIMEligibleCount PIM eligible, $PA01PIMActiveCount PIM active)"
+    if ($PIMForPA01Warning) {
+        $PA01Result = "$PA01Result. $PIMForPA01Warning."
+    }
+
+    Export-ControlResult -ControlID "AAD.PA.01" -Data $PA01Data -Result $PA01Result -Status $(if ($PA01UniqueCount -ge 2 -and $PA01UniqueCount -le 4) { "PASS" } else { "FAIL" })
 }
 
 ############################################################
@@ -73,7 +142,7 @@ elseif ($RolesAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.PA.02" -AvailabilityState $RolesAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.PA.02" -Data $BreakGlassCandidates -Result "$($BreakGlassCandidates.Count) cloud-only enabled Global Administrator accounts found as break-glass candidates" -Status $(if ($BreakGlassCandidates.Count -gt 0) { "WARNING" } else { "FAIL" })
+    Export-ControlResult -ControlID "AAD.PA.02" -Data $BreakGlassCandidates -Result "$($BreakGlassCandidates.Count) cloud-only enabled Global Administrator accounts found as break-glass candidates" -Status "INFO"
 }
 
 ############################################################

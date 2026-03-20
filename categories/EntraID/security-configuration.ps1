@@ -316,4 +316,3 @@ Export-ControlResult -ControlID "AAD.SC.18" -Data $SC18Data -Result "Manual veri
 Export-SummaryReport "SecurityConfiguration"
 
 Write-Host "Security Configuration audit completed."
-

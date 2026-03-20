@@ -48,7 +48,7 @@ elseif ($SignInsAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.EC.01" -AvailabilityState $SignInsAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.EC.01" -Data $InactiveExternal30 -Result "$($InactiveExternal30.Count) guest accounts show no sign-in activity in the last 30 days" -Status $(if ($InactiveExternal30.Count -eq 0) { "PASS" } else { "WARNING" })
+    Export-ControlResult -ControlID "AAD.EC.01" -Data $InactiveExternal30 -Result "$($InactiveExternal30.Count) guest accounts show no sign-in activity in the last 30 days" -Status "INFO"
 }
 
 ############################################################
@@ -76,7 +76,7 @@ elseif ($SignInsAvailability) {
     Export-ControlUnavailableFromState -ControlID "AAD.EC.02" -AvailabilityState $SignInsAvailability
 }
 else {
-    Export-ControlResult -ControlID "AAD.EC.02" -Data $InactiveExternal90 -Result "$($InactiveExternal90.Count) guest accounts show no sign-in activity in the last 90 days" -Status $(if ($InactiveExternal90.Count -eq 0) { "PASS" } else { "FAIL" })
+    Export-ControlResult -ControlID "AAD.EC.02" -Data $InactiveExternal90 -Result "$($InactiveExternal90.Count) guest accounts show no sign-in activity in the last 90 days" -Status "INFO"
 }
 
 ############################################################
@@ -138,6 +138,3 @@ Export-ControlResult -ControlID "AAD.EC.04" -Data $Partners -Result $EC04Result 
 Export-SummaryReport "ExternalCollaboration"
 
 Write-Host "External Collaboration audit completed."
-
-
-
